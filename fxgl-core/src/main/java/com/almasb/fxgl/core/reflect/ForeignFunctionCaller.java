@@ -43,7 +43,7 @@ public final class ForeignFunctionCaller {
     private Map<String, MethodHandle> functions = new HashMap<>();
 
     private ForeignFunctionContext context;
-    private BlockingQueue<Consumer<ForeignFunctionContext>> executionQueue = new ArrayBlockingQueue<>(1000);
+    public BlockingQueue<Consumer<ForeignFunctionContext>> executionQueue = new ArrayBlockingQueue<>(1000);
     private AtomicBoolean isRunning = new AtomicBoolean(true);
 
     private FFCThread thread;
