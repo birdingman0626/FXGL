@@ -250,7 +250,6 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>${maven.pmd.version}</version>
                 <configuration>
-                    <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
                     <targetJdk>${maven.compiler.target}</targetJdk>
                     <verbose>true</verbose>
                     <linkXRef>false</linkXRef>
