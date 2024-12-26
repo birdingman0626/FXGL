@@ -5,6 +5,7 @@
  */
 package com.almasb.fxgl.core.reflect;
 
+import com.almasb.fxgl.core.util.EmptyRunnable;
 import com.almasb.fxgl.logging.Logger;
 
 import java.lang.foreign.*;
@@ -36,8 +37,6 @@ public final class ForeignFunctionCaller {
     private static final AtomicInteger threadCount = new AtomicInteger(0);
 
     private List<Path> libraries;
-    private Arena arena;
-    private Linker linker;
     private List<SymbolLookup> lookups = new ArrayList<>();
     private Map<String, MemorySegment> functionsAddresses = new HashMap<>();
     private Map<String, MethodHandle> functions = new HashMap<>();
@@ -46,7 +45,10 @@ public final class ForeignFunctionCaller {
     public BlockingQueue<Consumer<ForeignFunctionContext>> executionQueue = new ArrayBlockingQueue<>(1000);
     private AtomicBoolean isRunning = new AtomicBoolean(true);
 
-    private FFCThread thread;
+    private Thread thread;
+
+    private Runnable onLoaded = EmptyRunnable.INSTANCE;
+    private Runnable onUnloaded = EmptyRunnable.INSTANCE;
     private boolean isLoaded = false;
 
     /**
@@ -58,6 +60,14 @@ public final class ForeignFunctionCaller {
         this.libraries = new ArrayList<>(libraries);
     }
 
+    public void setOnLoaded(Runnable onLoaded) {
+        this.onLoaded = onLoaded;
+    }
+
+    public void setOnUnloaded(Runnable onUnloaded) {
+        this.onUnloaded = onUnloaded;
+    }
+
     public void load() {
         if (isLoaded) {
             log.warning("Already loaded: " + libraries);
@@ -66,7 +76,8 @@ public final class ForeignFunctionCaller {
 
         isLoaded = true;
 
-        thread = new FFCThread(this::threadTask);
+        thread = new Thread(this::threadTask, "FFCThread-" + threadCount.getAndIncrement());
+        thread.setDaemon(true);
         thread.start();
 
         // TODO: wait until libs are loaded and loop entered
@@ -76,18 +87,16 @@ public final class ForeignFunctionCaller {
     private void threadTask() {
         log.debug("Starting native setup task");
 
-        try (var a = Arena.ofConfined()) {
-            arena = a;
-            linker = Linker.nativeLinker();
-
+        try (var arena = Arena.ofConfined()) {
             libraries.forEach(file -> {
                 var lookup = SymbolLookup.libraryLookup(file, arena);
                 lookups.add(lookup);
             });
 
-            context = new ForeignFunctionContext(arena, linker, lookups);
+            context = new ForeignFunctionContext(arena, Linker.nativeLinker(), lookups);
 
             log.debug("Native libs loaded and context created");
+            onLoaded.run();
 
             while (isRunning.get()) {
                 try {
@@ -101,6 +110,11 @@ public final class ForeignFunctionCaller {
         } catch (Throwable e) {
             log.warning("FFCThread task failed", e);
         }
+
+        // the libraries loaded iva SymbolLookup are unloaded
+        // when the associated arena is closed, i.e. when above try-catch completes
+        // however, in practice, it appears there is a delay before the lib is fully closed
+        onUnloaded.run();
     }
 
     private MethodHandle getFunctionImpl(String name, FunctionDescriptor fd) {
@@ -125,7 +139,7 @@ public final class ForeignFunctionCaller {
             functionsAddresses.put(name, functionAddress);
         }
 
-        MethodHandle function = linker.downcallHandle(functionAddress, fd);
+        MethodHandle function = context.linker.downcallHandle(functionAddress, fd);
 
         functions.put(functionID, function);
 
@@ -160,20 +174,21 @@ public final class ForeignFunctionCaller {
     }
 
     public void unload() {
-        // TODO: isLoaded = false?
-        // TODO: if not loaded ignore, same for overload below
-        isRunning.set(false);
-
-        // TODO: execute poison pill to shutdown thread
+        unload(_ -> {});
     }
 
     /**
-     * @param libExitFunctionCall the last function to call in the loaded library(-ies)
+     * @param libExitFunctionCall the last function to call in the loaded library(-ies),
+     * do not schedule any other execute() operations within the call
      */
     public void unload(Consumer<ForeignFunctionContext> libExitFunctionCall) {
-        isRunning.set(false);
+        // TODO: isLoaded = false?
+        // TODO: if not loaded ignore?
 
-        execute(libExitFunctionCall);
+        execute(context -> {
+            libExitFunctionCall.accept(context);
+            isRunning.set(false);
+        });
     }
 
     public final class ForeignFunctionContext {
@@ -218,12 +233,6 @@ public final class ForeignFunctionCaller {
 
         public MemorySegment allocateCharArrayFrom(String s) {
             return arena.allocateFrom(s);
-        }
-    }
-
-    private static class FFCThread extends Thread {
-        FFCThread(Runnable task) {
-            super(task, "FFCThread-" + threadCount.getAndIncrement());
         }
     }
 }
