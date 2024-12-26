@@ -9,6 +9,7 @@ package com.almasb.fxgl.texture
 import com.almasb.fxgl.core.View
 import com.almasb.fxgl.core.collection.PropertyMap
 import com.almasb.fxgl.core.concurrent.Async
+import com.almasb.fxgl.core.math.Vec2
 import com.almasb.fxgl.core.reflect.ForeignFunctionCaller
 import com.almasb.fxgl.core.util.Platform
 import com.almasb.fxgl.core.util.Platform.*
@@ -27,6 +28,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * TODO: this is experimental API and is WIP
+ * TODO: upgrade to latest stable SDL backend
+ * TODO: specify GL version in C++
+ * TODO: if GLSL version is missing, append it before compiling
  *
  * Represents a 2D image view, rendered via a GLSL fragment shader.
  *
@@ -35,7 +39,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @author Almas Baim (https://github.com/AlmasB)
  */
-class GLImageView : ImageView, View {
+class GLImageView(val width: Int,
+                  val height: Int,
+                  private val fragmentShader: String): ImageView(), View {
 
     companion object {
         private val log = Logger.get<GLImageView>()
@@ -99,35 +105,22 @@ class GLImageView : ImageView, View {
             
             """
 
-    private val fragmentShader: String
-
     val properties = PropertyMap()
     private val propertyLocationLookup = hashMapOf<String, Int>()
 
     private var programID: Int = -1
-    val width: Int
-    val height: Int
-    private val writableImage: WritableImage
+    private val writableImage = WritableImage(width, height)
 
     private var isCompilationScheduled = false
     private val isCompiled = AtomicBoolean(false)
 
-    private val backendArray: IntArray
+    private val backendArray = IntArray(width * height)
     private lateinit var pixelsArrayJava: MemorySegment
     private lateinit var pixelsArrayCPP: MemorySegment
 
-    constructor(width: Int, height: Int, fragmentShader: String): super() {
-        this.width = width
-        this.height = height
-        this.fragmentShader = fragmentShader
-
-        writableImage = WritableImage(width, height)
+    init {
         image = writableImage
 
-        backendArray = IntArray(width * height)
-    }
-
-    init {
         sceneProperty().subscribe { oldScene, newScene ->
 
             // just added to scene graph, check if backend lib is ready
@@ -151,6 +144,19 @@ class GLImageView : ImageView, View {
 
         // TODO: check before final impl
         scaleY = -1.0
+
+        initDefaultProperties()
+    }
+
+    private fun initDefaultProperties() {
+        with(properties) {
+            setValue("resolution", Vec2(width.toFloat(), height.toFloat()))
+            setValue("time", 0.0)
+
+            // TODO: uniform vec2 mouse;
+            // these need updating only when the cursor is over this GLImageView
+            // the values also need converting from UI space to GLImageView space bound by resolution var
+        }
     }
 
     private fun compileShader() {
@@ -205,17 +211,31 @@ class GLImageView : ImageView, View {
             return
         }
 
+        properties.increment("time", tpf)
+
         ffc.execute {
             // TODO: extract FDs from below?
 
             it.call("updateFrame", FunctionDescriptor.ofVoid(JAVA_INT), programID)
 
             propertyLocationLookup.forEach { propName, varLocation ->
-                // TODO: this only works with 1-dimensional float, add and detect other types
+                // TODO: add int, vec3, vec4, Color?
 
-                val value = properties.getDouble(propName).toFloat()
+                val value = properties.getValue<Any>(propName)
 
-                it.call("setUniformVarValueFloat", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_FLOAT), varLocation, value)
+                when (value) {
+                    is Double -> {
+                        it.call("setUniformVarValueFloat", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_FLOAT), varLocation, value.toFloat())
+                    }
+
+                    is Vec2 -> {
+                        it.call("setUniformVarValueFloat2", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_FLOAT, JAVA_FLOAT), varLocation, value.x, value.y)
+                    }
+
+                    else -> {
+                        log.warning("uniform var $propName exists, but FXGL property type $value is unknown")
+                    }
+                }
             }
 
             it.call("renderFrame", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_INT, ADDRESS), width, height, pixelsArrayCPP)
