@@ -7,6 +7,7 @@
 package com.almasb.fxgl.app.scene
 
 import com.almasb.fxgl.app.MainWindow
+import com.almasb.fxgl.core.View
 import com.almasb.fxgl.core.concurrent.Async
 import com.almasb.fxgl.core.math.FXGLMath
 import com.almasb.fxgl.dsl.FXGL.Companion.getAppHeight
@@ -80,6 +81,8 @@ internal constructor(width: Int, height: Int,
     @get:JvmName("getUINodes")
     val uiNodes: ObservableList<Node>
         get() = uiRoot.childrenUnmodifiable
+
+    private val updatableViews = arrayListOf<View>()
 
     /**
      * If set to true, Game Scene will require calling step()
@@ -229,6 +232,9 @@ internal constructor(width: Int, height: Int,
         physicsWorld.onUpdate(tpf)
         viewport.onUpdate(tpf)
 
+        // update UI nodes
+        updatableViews.forEach { it.onUpdate(tpf) }
+
         if (!is3D && isZSortingNeeded) {
             sortZ()
             isZSortingNeeded = false
@@ -259,6 +265,9 @@ internal constructor(width: Int, height: Int,
      */
     fun addUINode(node: Node) {
         uiRoot.children.add(node)
+
+        if (node is View)
+            updatableViews += node
     }
 
     /**
@@ -274,11 +283,13 @@ internal constructor(width: Int, height: Int,
     /**
      * Remove given node from the UI overlay.
      *
-     * @param n node to remove
-     * @return true iff the node has been removed
+     * @param node node to remove
      */
-    fun removeUINode(n: Node): Boolean {
-        return uiRoot.children.remove(n)
+    fun removeUINode(node: Node) {
+        uiRoot.children.remove(node)
+
+        if (node is View)
+            updatableViews -= node
     }
 
     /**
@@ -311,6 +322,7 @@ internal constructor(width: Int, height: Int,
      */
     fun clearUINodes() {
         uiRoot.children.clear()
+        updatableViews.clear()
     }
 
     /**
