@@ -12,6 +12,7 @@ import com.almasb.fxgl.app.scene.GameScene
 import com.almasb.fxgl.app.scene.LoadingScene
 import com.almasb.fxgl.app.services.FXGLAssetLoaderService
 import com.almasb.fxgl.core.Updatable
+import com.almasb.fxgl.core.collection.PropertyMap
 import com.almasb.fxgl.core.concurrent.Async
 import com.almasb.fxgl.core.concurrent.IOTask
 import com.almasb.fxgl.core.serialization.Bundle
@@ -295,8 +296,10 @@ class FXGLApplication : Application() {
     fun exitFXGL() {
         log.debug("Exiting FXGL")
 
-        if (!isError)
+        if (!isError) {
             engine.stopLoopAndExitServices()
+            app.onExit()
+        }
 
         Async.shutdownNow()
 
@@ -377,6 +380,9 @@ class FXGLApplication : Application() {
          * Always-on timer.
          */
         override val timer = Timer()
+
+        override val worldProperties: PropertyMap
+            get() = gameScene.gameWorld.properties
 
         override val currentScene: Scene
             get() = mainWindow.currentScene
