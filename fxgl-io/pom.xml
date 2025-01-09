@@ -26,6 +26,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.almasb</groupId>
+            <artifactId>fxgl-scene</artifactId>
+            <version>${fxgl.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.gluonhq.attach</groupId>
             <artifactId>storage</artifactId>
             <version>${attach.version}</version>
