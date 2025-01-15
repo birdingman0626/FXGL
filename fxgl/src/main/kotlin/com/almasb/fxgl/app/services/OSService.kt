@@ -8,6 +8,7 @@ package com.almasb.fxgl.app.services
 
 import com.almasb.fxgl.core.EngineService
 import com.almasb.fxgl.core.concurrent.Async
+import com.almasb.fxgl.core.concurrent.IOTask
 import com.almasb.fxgl.logging.Logger
 import javafx.geometry.Point2D
 import javafx.geometry.Rectangle2D
@@ -15,6 +16,7 @@ import javafx.scene.image.Image
 import javafx.scene.input.MouseButton
 import javafx.scene.robot.Robot
 import java.util.Optional
+import java.util.function.Consumer
 
 private val log = Logger.get("OSService")
 
@@ -40,6 +42,44 @@ class OSService : EngineService() {
         }
 
         return Optional.empty()
+    }
+
+    /**
+     * @return a blocking task that starts [fullCommand] as a process and redirects output to [outputConsumer]
+     */
+    @JvmOverloads fun startProcessTask(fullCommand: String, outputConsumer: Consumer<String> = Consumer {}): IOTask<Int> {
+        return startProcessTask(fullCommand, emptyMap(), outputConsumer)
+    }
+
+    /**
+     * @return a blocking task that starts [fullCommand] as a process, includes [env] vars and redirects output to [outputConsumer]
+     */
+    fun startProcessTask(fullCommand: String, env: Map<String, String>, outputConsumer: Consumer<String>): IOTask<Int> {
+
+        return IOTask.of("startProcessTask") {
+            val processBuilder = ProcessBuilder(fullCommand.split(" ".toRegex()))
+            processBuilder.redirectErrorStream(true)
+            processBuilder.environment().putAll(env)
+
+            val process = processBuilder.start()
+
+            // thread for consuming output
+            val t = Thread {
+                process.inputReader().use { reader ->
+                    var line: String? = ""
+                    while (line != null) {
+                        line = reader.readLine()
+
+                        if (line != null)
+                            outputConsumer.accept(line)
+                    }
+                }
+            }
+            t.isDaemon = true
+            t.start()
+
+            process.waitFor()
+        }
     }
 }
 
