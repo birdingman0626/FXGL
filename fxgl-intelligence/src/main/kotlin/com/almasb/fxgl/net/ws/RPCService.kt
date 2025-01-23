@@ -52,7 +52,7 @@ abstract class RPCService(
         }
     }
 
-    override fun onInit() {
+    final override fun onInit() {
         rfc.addFunctionCallTarget(this)
         log.debug("Added ${javaClass.simpleName} methods: ${rfc.methods.map { it.name }}")
 
