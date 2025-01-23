@@ -30,6 +30,10 @@ class HandTrackingService : EngineService() {
 
     private val handDataHandlers = arrayListOf<Consumer<Hand>>()
 
+    val landmarksView: HandLandmarksView by lazy {
+        HandLandmarksView().also { addInputHandler(it) }
+    }
+
     override fun onInit() {
         server.addMessageHandler { message ->
             try {
@@ -75,6 +79,10 @@ class HandTrackingService : EngineService() {
 
                 val options = ChromeOptions()
                 options.addArguments("--headless=new")
+
+                // for modules
+                options.addArguments("--allow-file-access-from-files")
+                // for webcam, audio input
                 options.addArguments("--use-fake-ui-for-media-stream")
 
                 webDriver = ChromeDriver(options)

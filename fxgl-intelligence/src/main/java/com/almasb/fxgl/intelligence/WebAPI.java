@@ -45,6 +45,7 @@ public final class WebAPI {
                 "tts/index.html",
                 "tts/script.js",
                 "gesturerecog/index.html",
+                "gesturerecog/script.js",
                 "speechrecog/index.html",
                 "speechrecog/script.js"
         ).forEach(relativeURL -> {
