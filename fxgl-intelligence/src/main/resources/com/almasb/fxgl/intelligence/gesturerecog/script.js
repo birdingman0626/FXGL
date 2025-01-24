@@ -18,8 +18,35 @@ import {
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 let handLandmarker = undefined;
+let nextVideoDeviceId = "";
+let isReady = false;
 
 const socket = new WebSocket('ws://localhost:55560');
+
+socket.addEventListener('open', function (event) {
+    createHandLandmarker();
+});
+
+socket.addEventListener('message', function (event) {
+    let message = event.data;
+
+    if (message.startsWith(FUNCTION_CALL_TAG)) {
+        let func = message.substring(FUNCTION_CALL_TAG.length);
+        let tokens = func.split('*,,*');
+        let funcName = tokens[0];
+
+        if (funcName === "setVideoInputDevice") {
+            let deviceId = tokens[1];
+
+            // TODO: window["functionName"](arguments);
+
+            setVideoInputDevice(deviceId);
+        }
+    }
+});
+
+const video = document.getElementById("webcam");
+let lastVideoTime = -1;
 
 // Before we can use HandLandmarker class we must wait for it to finish
 // loading. Machine Learning models can be large and take a moment to
@@ -37,21 +64,29 @@ const createHandLandmarker = async () => {
         numHands: 2
     });
 
-    enableCam();
+    checkMediaDevices();
+    enableWebcam();
+
+    rpcRun("initService");
 };
-createHandLandmarker();
 
-/********************************************************************
-// Continuously grab image from webcam stream and detect it.
-********************************************************************/
+function checkMediaDevices() {
+    navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+            devices.forEach((device) => {
+                rpcRun("onMediaDeviceDetected", `${device.kind}`, `${device.label}`, `${device.deviceId}`);
+            });
 
-const video = document.getElementById("webcam");
-let lastVideoTime = -1;
+            rpcRun("onMediaDeviceDetectionComplete");
+        })
+        .catch((err) => {
+            // ignore `${err.name}: ${err.message}`
+        });
+}
 
 // Enable the live webcam view and start detection.
-function enableCam() {
-
-    // getUsermedia parameters.
+function enableWebcam() {
     const constraints = {
         video: true
     };
@@ -60,10 +95,41 @@ function enableCam() {
     navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
         video.srcObject = stream;
         video.addEventListener("loadeddata", predictWebcam);
+
+        isReady = true;
+    });
+}
+
+function setVideoInputDevice(selectedDeviceId) {
+    nextVideoDeviceId = selectedDeviceId;
+    isReady = false;
+
+    const constraints = {
+        video: {
+            deviceId: nextVideoDeviceId,
+        },
+    };
+
+    // Activate the webcam stream.
+    navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+        // stop previous tracks
+        video.srcObject.getVideoTracks().forEach((track) => {
+            track.stop();
+        });
+
+        // set new stream
+        video.srcObject = stream;
+        video.addEventListener("loadeddata", predictWebcam);
+
+        console.log("set stream: " + stream);
+        isReady = true;
     });
 }
 
 async function predictWebcam() {
+    if (!isReady)
+        return;
+
     let startTimeMs = performance.now();
     if (lastVideoTime !== video.currentTime) {
         lastVideoTime = video.currentTime;
@@ -80,7 +146,7 @@ async function predictWebcam() {
                     data += point.x + "," + point.y + "," + point.z + ",";
                 });
 
-                socket.send(data);
+                rpcRun("onHandInput", data);
 
                 id++;
             }
@@ -89,4 +155,28 @@ async function predictWebcam() {
 
     // Call this function again to keep predicting when the browser is ready.
     window.requestAnimationFrame(predictWebcam);
+}
+
+// the below is a copy-paste since this js file is a module but ../rpc-common.js is not
+// include ../rpc-common.js
+
+const SEPARATOR = "*,,*";
+const FUNCTION_CALL_TAG = "F_CALL:";
+const FUNCTION_RETURN_TAG = "F_RETURN:";
+
+function rpcRun(funcName, ...args) {
+    let argsString = "";
+
+    for (const arg of args) {
+        argsString += arg + SEPARATOR;
+    }
+
+    let message = `${FUNCTION_CALL_TAG}${funcName}${SEPARATOR}${argsString}`;
+
+    socket.send(message);
+}
+
+function rpcReturn(funcName) {
+    // TODO: unique id?
+    //socket.send(`${FUNCTION_RETURN_TAG}${funcName}.F_RESULT:${names}`);
 }
