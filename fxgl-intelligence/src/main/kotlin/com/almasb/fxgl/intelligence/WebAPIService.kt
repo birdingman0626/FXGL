@@ -12,12 +12,16 @@ import com.almasb.fxgl.net.ws.LocalWebSocketServer
 import com.almasb.fxgl.net.ws.RPCService
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyBooleanWrapper
+import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.firefox.FirefoxOptions
+import org.openqa.selenium.logging.LogType
+import org.openqa.selenium.logging.LoggingPreferences
 import java.net.URL
+import java.util.logging.Level
 
 /**
  * Provides access to JS-driven implementation.
@@ -111,9 +115,27 @@ abstract class WebAPIService(server: LocalWebSocketServer, private val apiURL: S
     private fun loadChromeDriver(): WebDriver {
         val options = ChromeOptions()
         options.addArguments("--headless=new")
+        // for modules
+        options.addArguments("--allow-file-access-from-files")
+        // for webcam, audio input
         options.addArguments("--use-fake-ui-for-media-stream")
 
+        val logPrefs = LoggingPreferences()
+        logPrefs.enable(LogType.BROWSER, Level.ALL)
+
+        options.setCapability("goog:loggingPrefs", logPrefs)
+
         return ChromeDriver(options)
+    }
+
+    protected fun executeScript(script: String) {
+        try {
+            webDriver?.let {
+                (it as JavascriptExecutor).executeScript(script)
+            }
+        } catch (e: Exception) {
+            log.warning("Failed to execute script", e)
+        }
     }
 
     /**
