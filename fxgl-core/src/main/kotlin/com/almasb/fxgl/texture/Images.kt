@@ -17,8 +17,10 @@ import javafx.scene.effect.BlendMode
 import javafx.scene.image.*
 import javafx.scene.paint.Color
 import javafx.scene.shape.Rectangle
+import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.Base64
 import java.util.concurrent.Callable
 import javax.imageio.ImageIO
 import kotlin.math.abs
@@ -606,6 +608,20 @@ fun Image.subImage(area: Rectangle2D): Image {
     newImage.pixelWriter.setPixels(0, 0, newImage.width.toInt(), newImage.height.toInt(), pixelReader, minX, minY)
 
     return newImage
+}
+
+fun Image.toByteArray(): ByteArray {
+    val awtImage = toBufferedImage(this)
+
+    val baos = ByteArrayOutputStream()
+
+    ImageIO.write(awtImage, "png", baos)
+
+    return baos.toByteArray()
+}
+
+fun Image.toBase64(): String {
+    return Base64.getEncoder().encodeToString(this.toByteArray())
 }
 
 /**

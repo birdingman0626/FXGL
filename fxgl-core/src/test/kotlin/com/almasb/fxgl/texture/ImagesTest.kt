@@ -105,4 +105,15 @@ class ImagesTest {
 
         assertThat(result, `is`(0.0))
     }
+
+    @Test
+    fun `Convert to base64`() {
+        val img1 = ColoredTexture(100, 100, Color.WHITE).image
+
+        val s = img1.toBase64()
+
+        assertThat(s, `is`(
+            "iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAA/ElEQVR4Xu3RoQEAMAyAsP7/dOv3wBCJxDJLyryBvwyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTGkBhDYgyJMSTmAPgrrNZaawxDAAAAAElFTkSuQmCC"
+        ))
+    }
 }
