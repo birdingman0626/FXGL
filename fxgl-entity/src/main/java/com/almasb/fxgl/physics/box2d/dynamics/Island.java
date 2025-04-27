@@ -346,9 +346,6 @@ class Island {
         if (allowSleep) {
             float minSleepTime = Float.MAX_VALUE;
 
-            final float linTolSqr = linearSleepTolerance * linearSleepTolerance;
-            final float angTolSqr = angularSleepTolerance * angularSleepTolerance;
-
             for (int i = 0; i < bodyCount; ++i) {
                 Body b = bodies[i];
                 if (b.getType() == BodyType.STATIC) {
@@ -356,8 +353,8 @@ class Island {
                 }
 
                 if (!b.isSleepingAllowed()
-                        || b.getAngularVelocity() * b.getAngularVelocity() > angTolSqr
-                        || Vec2.dot(b.getLinearVelocity(), b.getLinearVelocity()) > linTolSqr) {
+                        || b.getAngularVelocity() * b.getAngularVelocity() > angularSleepToleranceSquared
+                        || Vec2.dot(b.getLinearVelocity(), b.getLinearVelocity()) > linearSleepToleranceSquared) {
                     b.setSleepTime(0);
                     minSleepTime = 0.0f;
                 } else {
