@@ -300,12 +300,7 @@ class Island {
                 v.mulLocal(ratio);
             }
 
-            float w = velocities[i].w;
-            float rotation = h * w;
-            if (rotation * rotation > maxRotationSquared) {
-                float ratio = maxRotation / FXGLMath.abs(rotation);
-                w *= ratio;
-            }
+            float w = limitRotation(velocities[i].w, h);
 
             Vec2 c = positions[i].c;
             // Integrate
@@ -448,12 +443,7 @@ class Island {
                 v.mulLocal(ratio);
             }
 
-            float w = velocities[i].w;
-            float rotation = h * w;
-            if (rotation * rotation > maxRotationSquared) {
-                float ratio = maxRotation / FXGLMath.abs(rotation);
-                w *= ratio;
-            }
+            float w = limitRotation(velocities[i].w, h);
 
             Vec2 c = positions[i].c;
             // Integrate
@@ -482,6 +472,22 @@ class Island {
         }
 
         report(toiContactSolver.getVelocityConstraints());
+    }
+
+    /**
+     * @param originalW rotation representation
+     * @param h time step
+     * @return w or w limited to maxRotation ratio
+     */
+    private float limitRotation(float originalW, float h) {
+        float w = originalW;
+        float rotation = h * w;
+        if (rotation * rotation > maxRotationSquared) {
+            float ratio = maxRotation / FXGLMath.abs(rotation);
+            w *= ratio;
+        }
+
+        return w;
     }
 
     void add(Body body) {
