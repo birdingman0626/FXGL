@@ -214,7 +214,7 @@ public final class AStarPathfinder<T extends AStarCell> implements Pathfinder<T>
      * @return neighbors of the node
      */
     private List<T> getValidNeighbors(T node, NeighborDirection neighborDirection, AStarCell... busyNodes) {
-        var result = grid.getNeighbors(node.getX(), node.getY(), neighborDirection);
+        var result = new ArrayList<>(grid.getNeighbors(node.getX(), node.getY(), neighborDirection));
         result.removeAll(Arrays.asList(busyNodes));
         result.removeIf(cell -> !grid.isTraversableInSingleMove(node, cell));
         return result;
