@@ -21,7 +21,7 @@ import java.util.*;
 /**
  * @author Almas Baimagambetov (almaslvl@gmail.com)
  */
-public final class AStarPathfinder<T extends AStarCell> implements Pathfinder<T> {
+public final class AStarPathfinder<T extends AStarCell> extends Pathfinder<T> {
 
     private final TraversableGrid<T> grid;
 
@@ -55,21 +55,6 @@ public final class AStarPathfinder<T extends AStarCell> implements Pathfinder<T>
 
     public boolean isCachingPaths() {
         return isCachingPaths;
-    }
-
-    @Override
-    public List<T> findPath(int sourceX, int sourceY, int targetX, int targetY) {
-        return findPath(grid.getData(), grid.get(sourceX, sourceY), grid.get(targetX, targetY));
-    }
-
-    @Override
-    public List<T> findPath(int sourceX, int sourceY, int targetX, int targetY, NeighborDirection neighborDirection) {
-        return findPath(grid.getData(), grid.get(sourceX, sourceY), grid.get(targetX, targetY), neighborDirection);
-    }
-
-    @Override
-    public List<T> findPath(int sourceX, int sourceY, int targetX, int targetY, List<T> busyCells) {
-        return findPath(grid.getData(), grid.get(sourceX, sourceY), grid.get(targetX, targetY), FOUR_DIRECTIONS, busyCells.toArray(new AStarCell[0]));
     }
 
     @Override
