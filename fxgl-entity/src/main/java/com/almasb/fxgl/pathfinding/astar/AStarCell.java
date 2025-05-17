@@ -31,6 +31,10 @@ public class AStarCell extends Cell {
     private int gCost;
     private int hCost;
 
+    public AStarCell(int x, int y) {
+        this(x, y, CellState.WALKABLE);
+    }
+
     public AStarCell(int x, int y, CellState state) {
         this(x, y, state, DEFAULT_MOVEMENT_COST);
     }
