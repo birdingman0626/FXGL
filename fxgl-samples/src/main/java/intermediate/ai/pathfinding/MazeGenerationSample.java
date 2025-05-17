@@ -12,7 +12,8 @@ import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.components.RandomAStarMoveComponent;
 import com.almasb.fxgl.pathfinding.CellMoveComponent;
 import com.almasb.fxgl.pathfinding.astar.AStarMoveComponent;
-import com.almasb.fxgl.pathfinding.astar.TraversableGrid;
+import com.almasb.fxgl.pathfinding.TraversableGrid;
+import com.almasb.fxgl.pathfinding.maze.MazeCell;
 import com.almasb.fxgl.pathfinding.maze.MazeGrid;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
@@ -100,7 +101,7 @@ public class MazeGenerationSample extends GameApplication {
         addUINode(line);
     }
 
-    private void spawnNPC(int x, int y, TraversableGrid<?> grid) {
+    private void spawnNPC(int x, int y, TraversableGrid<MazeCell> grid) {
         var view = new Rectangle(CELL_SIZE - 2, CELL_SIZE - 2, FXGLMath.randomColor().desaturate().darker());
         view.setStroke(Color.BLACK);
         view.setStrokeWidth(2);
