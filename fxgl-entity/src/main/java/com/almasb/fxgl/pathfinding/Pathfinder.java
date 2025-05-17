@@ -6,8 +6,9 @@
 
 package com.almasb.fxgl.pathfinding;
 
-import com.almasb.fxgl.core.collection.grid.Cell;
 import com.almasb.fxgl.core.collection.grid.NeighborDirection;
+import com.almasb.fxgl.pathfinding.astar.AStarCell;
+import com.almasb.fxgl.pathfinding.astar.TraversableGrid;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +16,35 @@ import java.util.List;
 /**
  * @author Almas Baimagambetov (almaslvl@gmail.com)
  */
-public abstract class Pathfinder<T extends Cell> {
+public abstract class Pathfinder<T extends AStarCell> {
+
+    private TraversableGrid<T> grid;
+    private CellVisitListener<T> visitListener = _ -> {};
+    private PathFoundListener<T> pathListener = _ -> {};
+
+    public Pathfinder(TraversableGrid<T> grid) {
+        this.grid = grid;
+    }
+
+    public final TraversableGrid<T> getGrid() {
+        return grid;
+    }
+
+    public final CellVisitListener<T> getCellVisitListener() {
+        return visitListener;
+    }
+
+    public final void setCellVisitListener(CellVisitListener<T> visitListener) {
+        this.visitListener = visitListener;
+    }
+
+    public final PathFoundListener<T> getPathFoundListener() {
+        return pathListener;
+    }
+
+    public final void setPathFoundListener(PathFoundListener<T> pathListener) {
+        this.pathListener = pathListener;
+    }
 
     /**
      * Empty list is returned if no path exists.
