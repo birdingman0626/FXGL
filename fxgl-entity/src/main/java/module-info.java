@@ -36,4 +36,5 @@ module com.almasb.fxgl.entity {
     opens com.almasb.fxgl.entity.component to com.almasb.fxgl.core;
     opens com.almasb.fxgl.entity.components to com.almasb.fxgl.core;
     opens com.almasb.fxgl.pathfinding.astar to com.almasb.fxgl.core;
+    opens com.almasb.fxgl.pathfinding to com.almasb.fxgl.core;
 }

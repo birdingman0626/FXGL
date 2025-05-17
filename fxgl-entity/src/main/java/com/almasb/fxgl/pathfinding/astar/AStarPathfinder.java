@@ -11,6 +11,7 @@ import com.almasb.fxgl.core.collection.grid.NeighborDirection;
 import static com.almasb.fxgl.core.collection.grid.NeighborDirection.*;
 import com.almasb.fxgl.pathfinding.CellState;
 import com.almasb.fxgl.pathfinding.Pathfinder;
+import com.almasb.fxgl.pathfinding.TraversableGrid;
 import com.almasb.fxgl.pathfinding.heuristic.DiagonalHeuristic;
 import com.almasb.fxgl.pathfinding.heuristic.Heuristic;
 import com.almasb.fxgl.pathfinding.heuristic.ManhattanDistance;

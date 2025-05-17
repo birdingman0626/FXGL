@@ -7,8 +7,6 @@
 package com.almasb.fxgl.pathfinding;
 
 import com.almasb.fxgl.core.collection.grid.NeighborDirection;
-import com.almasb.fxgl.pathfinding.astar.AStarCell;
-import com.almasb.fxgl.pathfinding.astar.TraversableGrid;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,7 +14,7 @@ import java.util.List;
 /**
  * @author Almas Baimagambetov (almaslvl@gmail.com)
  */
-public abstract class Pathfinder<T extends AStarCell> {
+public abstract class Pathfinder<T extends TraversableCell> {
 
     private TraversableGrid<T> grid;
     private CellVisitListener<T> visitListener = _ -> {};
