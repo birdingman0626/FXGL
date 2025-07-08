@@ -168,3 +168,38 @@ To benefit from upstream improvements while maintaining JDK 17 compatibility:
 3. Test compatibility with JDK 17 before merging changes
 4. Document any limitations in this README
 5. **Dependency Updates**: Regular updates to maintain security and compatibility
+
+## Automated Releases
+
+This repository includes automated release builds via GitHub Actions:
+
+### Release Distribution
+- **All-in-One JAR**: Single JAR containing the complete FXGL framework
+- **Individual Module JARs**: Separate JARs for each module (core, entity, io, scene, gameplay, etc.)
+- **Java 17 Compatible**: All artifacts built and tested with Java 17 LTS
+
+### Getting Pre-Built JARs
+1. **Latest Release**: Check the [Releases](../../releases) page for the latest version
+2. **All-in-One**: Download `fxgl-all-in-one-{version}.jar` for complete framework
+3. **Selective Modules**: Download individual module JARs as needed
+
+### Release Schedule
+- **Tag-Based**: Releases are automatically created when version tags are pushed
+- **Version Format**: `v17.x.y` following the versioning scheme described above
+- **Automated Testing**: All releases undergo automated build and packaging verification
+
+### Using in Your Project
+```xml
+<!-- Maven dependency (when using individual modules) -->
+<dependency>
+    <groupId>com.github.almasb</groupId>
+    <artifactId>fxgl-core</artifactId>
+    <version>17.3.1</version>
+</dependency>
+
+<!-- Or include the all-in-one JAR directly in your classpath -->
+```
+
+### Manual Build vs Pre-Built
+- **Pre-Built JARs**: Ready-to-use, tested builds from the Releases page
+- **Manual Build**: Follow the "Building from Source" section above for customization

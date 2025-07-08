@@ -178,3 +178,46 @@ FXGL supports multiple platforms with automatic platform detection:
 - Browser: Experimental support
 
 Platform-specific code should use the Platform utility class.
+
+## Release Process
+
+### Automated Release Workflow
+
+This repository includes a GitHub Actions workflow (`.github/workflows/build-and-release.yml`) that automatically builds and publishes releases:
+
+#### Trigger Methods
+1. **Tag Push**: Push a git tag starting with `v` (e.g., `v17.3.1`)
+2. **Manual Dispatch**: Use GitHub Actions UI to manually trigger with custom version
+
+#### Release Artifacts
+- **All-in-One JAR**: `fxgl-all-in-one-{version}.jar` - Complete framework in single JAR
+- **Individual Module JARs**: Each module packaged separately for selective inclusion
+  - `fxgl-core-{version}.jar` - Core utilities and services
+  - `fxgl-entity-{version}.jar` - ECS and physics engine
+  - `fxgl-io-{version}.jar` - File system and networking
+  - `fxgl-scene-{version}.jar` - UI components and scene management
+  - `fxgl-gameplay-{version}.jar` - High-level game features
+  - `fxgl-controllerinput-{version}.jar` - Game controller support
+  - `fxgl-intelligence-{version}.jar` - AI and pathfinding
+  - `fxgl-tools-{version}.jar` - Development tools
+  - `fxgl-test-{version}.jar` - Testing utilities
+  - `fxgl-zdeploy-{version}.jar` - Deployment utilities
+
+#### Release Process
+```bash
+# Create and push release tag
+git tag v17.3.1
+git push origin v17.3.1
+
+# GitHub Actions will automatically:
+# 1. Build all modules with Java 17
+# 2. Package individual and all-in-one JARs
+# 3. Create GitHub release with all artifacts
+# 4. Generate release notes with Java 17 compatibility info
+```
+
+#### Build Configuration
+- **Java Version**: 17 LTS (Temurin distribution)
+- **Maven**: Uses modular build approach for reliability
+- **Optimizations**: Skips tests, GPG signing, license checks, and PMD for faster CI builds
+- **Caching**: Maven dependencies cached for improved performance
