@@ -19,9 +19,10 @@ import javafx.scene.Node
 import javafx.scene.image.ImageView
 import javafx.scene.image.WritableImage
 import javafx.scene.image.WritablePixelFormat
-import java.lang.foreign.FunctionDescriptor
-import java.lang.foreign.MemorySegment
-import java.lang.foreign.ValueLayout.*
+// Java 17 compatibility: FFM API imports removed
+// import java.lang.foreign.FunctionDescriptor
+// import java.lang.foreign.MemorySegment
+// import java.lang.foreign.ValueLayout.*
 import java.nio.ByteOrder
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
@@ -115,8 +116,11 @@ class GLImageView(val width: Int,
     private val isCompiled = AtomicBoolean(false)
 
     private val backendArray = IntArray(width * height)
-    private lateinit var pixelsArrayJava: MemorySegment
-    private lateinit var pixelsArrayCPP: MemorySegment
+    // Java 17 compatibility: MemorySegment not available
+    // private lateinit var pixelsArrayJava: MemorySegment
+    // private lateinit var pixelsArrayCPP: MemorySegment
+    private var pixelsArrayJava: Any? = null
+    private var pixelsArrayCPP: Any? = null
 
     init {
         image = writableImage
@@ -165,40 +169,47 @@ class GLImageView(val width: Int,
 
         ffc.execute {
 
+            // Java 17 compatibility: GL compilation disabled
             // GLuint compileShaders(char*, char*)
-            val fd = FunctionDescriptor.of(
-                JAVA_INT,
-                ADDRESS,
-                ADDRESS
-            )
+            // val fd = FunctionDescriptor.of(
+            //     JAVA_INT,
+            //     ADDRESS,
+            //     ADDRESS
+            // )
 
-            val vertexShaderArray = it.allocateCharArrayFrom(vertexShader)
-            val fragShaderArray = it.allocateCharArrayFrom(fragmentShader)
+            // val vertexShaderArray = it.allocateCharArrayFrom(vertexShader)
+            // val fragShaderArray = it.allocateCharArrayFrom(fragmentShader)
 
-            programID = it.call("compileShaders", fd, vertexShaderArray, fragShaderArray) as Int
+            // programID = it.call("compileShaders", fd, vertexShaderArray, fragShaderArray) as Int
+            programID = -1 // GL disabled in Java 17
 
+            // Java 17 compatibility: FFM API not available
             // GLint getUniformVarLocation(GLuint, char*)
-            val fd0 = FunctionDescriptor.of(
-                JAVA_INT,
-                JAVA_INT,
-                ADDRESS
-            )
+            // val fd0 = FunctionDescriptor.of(
+            //     JAVA_INT,
+            //     JAVA_INT,
+            //     ADDRESS
+            // )
 
             properties.forEach { propName, value ->
-                val varName = it.allocateCharArrayFrom(propName)
-
-                val varLocation = it.call("getUniformVarLocation", fd0, programID, varName) as Int
+                // val varName = it.allocateCharArrayFrom(propName)
+                // val varLocation = it.call("getUniformVarLocation", fd0, programID, varName) as Int
+                
+                log.debug("Property $propName: GL functionality disabled in Java 17")
+                // Always set to -1 to indicate GL not available
+                val varLocation = -1
 
                 if (varLocation == -1) {
-                    log.debug("Property $propName does not exist in shader")
+                    log.debug("Property $propName does not exist in shader (GL disabled)")
                 } else {
                     propertyLocationLookup[propName] = varLocation
                 }
             }
 
-            // pre-allocate the pixel data array
-            pixelsArrayCPP = it.allocateIntArray(width * height)
-            pixelsArrayJava = MemorySegment.ofArray(backendArray)
+            // Java 17 compatibility: pre-allocate the pixel data array (disabled)
+            // pixelsArrayCPP = it.allocateIntArray(width * height)
+            // pixelsArrayJava = MemorySegment.ofArray(backendArray)
+            log.debug("GL pixel array allocation disabled in Java 17")
 
             isCompiled.set(true)
         }
@@ -216,7 +227,8 @@ class GLImageView(val width: Int,
         ffc.execute {
             // TODO: extract FDs from below?
 
-            it.call("updateFrame", FunctionDescriptor.ofVoid(JAVA_INT), programID)
+            // Java 17 compatibility: GL calls disabled
+            // it.call("updateFrame", FunctionDescriptor.ofVoid(JAVA_INT), programID)
 
             propertyLocationLookup.forEach { propName, varLocation ->
                 // TODO: add int, vec3, vec4, Color?
@@ -225,22 +237,25 @@ class GLImageView(val width: Int,
 
                 when (value) {
                     is Double -> {
-                        it.call("setUniformVarValueFloat", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_FLOAT), varLocation, value.toFloat())
+                        // it.call("setUniformVarValueFloat", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_FLOAT), varLocation, value.toFloat())
+                        log.debug("GL uniform float call disabled in Java 17: $propName = ${value.toFloat()}")
                     }
 
                     is Vec2 -> {
-                        it.call("setUniformVarValueFloat2", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_FLOAT, JAVA_FLOAT), varLocation, value.x, value.y)
+                        // it.call("setUniformVarValueFloat2", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_FLOAT, JAVA_FLOAT), varLocation, value.x, value.y)
+                        log.debug("GL uniform vec2 call disabled in Java 17: $propName = (${value.x}, ${value.y})")
                     }
 
                     else -> {
-                        log.warning("uniform var $propName exists, but FXGL property type $value is unknown")
+                        log.warning("uniform var $propName exists, but FXGL property type $value is unknown (GL disabled)")
                     }
                 }
             }
 
-            it.call("renderFrame", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_INT, ADDRESS), width, height, pixelsArrayCPP)
-
-            MemorySegment.copy(pixelsArrayCPP, JAVA_INT, 0, pixelsArrayJava, JAVA_INT.withOrder(ByteOrder.nativeOrder()), 0, backendArray.size.toLong())
+            // it.call("renderFrame", FunctionDescriptor.ofVoid(JAVA_INT, JAVA_INT, ADDRESS), width, height, pixelsArrayCPP)
+            // MemorySegment.copy(pixelsArrayCPP, JAVA_INT, 0, pixelsArrayJava, JAVA_INT.withOrder(ByteOrder.nativeOrder()), 0, backendArray.size.toLong())
+            
+            log.debug("GL render frame call disabled in Java 17")
 
             Async.startAsyncFX {
                 writableImage.pixelWriter.setPixels(

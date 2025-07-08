@@ -8,7 +8,6 @@ package com.almasb.fxgl.core.reflect;
 import com.almasb.fxgl.core.util.EmptyRunnable;
 import com.almasb.fxgl.logging.Logger;
 
-import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 import java.nio.file.Path;
 import java.util.*;
@@ -37,10 +36,6 @@ public final class ForeignFunctionCaller {
     private static final AtomicInteger threadCount = new AtomicInteger(0);
 
     private List<Path> libraries;
-    private List<SymbolLookup> lookups = new ArrayList<>();
-    private Map<String, MemorySegment> functionsAddresses = new HashMap<>();
-    private Map<String, MethodHandle> functions = new HashMap<>();
-
     private ForeignFunctionContext context;
     public BlockingQueue<Consumer<ForeignFunctionContext>> executionQueue = new ArrayBlockingQueue<>(1000);
     private AtomicBoolean isRunning = new AtomicBoolean(true);
@@ -86,78 +81,38 @@ public final class ForeignFunctionCaller {
 
     private void threadTask() {
         log.debug("Starting native setup task");
+        
+        // Java 17 compatibility: FFM API is not available in stable form
+        // This is experimental/WIP code that requires Java 21+ FFM API
+        log.warning("Foreign Function & Memory API is not available in Java 17. GL functionality disabled.");
+        
+        context = new ForeignFunctionContext();
+        
+        log.debug("Java 17 compatibility context created (GL disabled)");
+        onLoaded.run();
 
-        try (var arena = Arena.ofConfined()) {
-            libraries.forEach(file -> {
-                var lookup = SymbolLookup.libraryLookup(file, arena);
-                lookups.add(lookup);
-            });
-
-            context = new ForeignFunctionContext(arena, Linker.nativeLinker(), lookups);
-
-            log.debug("Native libs loaded and context created");
-            onLoaded.run();
-
-            while (isRunning.get()) {
-                try {
-                    var functionCall = executionQueue.take();
-                    functionCall.accept(context);
-                } catch (Exception e) {
-                    log.warning("Native call failed", e);
-                }
+        while (isRunning.get()) {
+            try {
+                var functionCall = executionQueue.take();
+                functionCall.accept(context);
+            } catch (Exception e) {
+                log.warning("Native call failed", e);
             }
-
-        } catch (Throwable e) {
-            log.warning("FFCThread task failed", e);
         }
 
-        // the libraries loaded iva SymbolLookup are unloaded
-        // when the associated arena is closed, i.e. when above try-catch completes
-        // however, in practice, it appears there is a delay before the lib is fully closed
         onUnloaded.run();
     }
 
-    private MethodHandle getFunctionImpl(String name, FunctionDescriptor fd) {
-        String functionID = name + fd.toString();
-
-        if (functions.containsKey(functionID)) {
-            return functions.get(functionID);
-        }
-
-        MemorySegment functionAddress;
-
-        if (functionsAddresses.containsKey(name)) {
-            functionAddress = functionsAddresses.get(name);
-        } else {
-            functionAddress = lookups.stream()
-                    .map(l -> l.find(name))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .findAny()
-                    .orElseThrow(() -> new RuntimeException("Failed to find function in lookup: " + name));
-
-            functionsAddresses.put(name, functionAddress);
-        }
-
-        MethodHandle function = context.linker.downcallHandle(functionAddress, fd);
-
-        functions.put(functionID, function);
-
-        return function;
+    private MethodHandle getFunctionImpl(String name, Object fd) {
+        // Java 17 compatibility: return null handle
+        log.warning("Foreign Function calls are not supported in Java 17. Function: " + name);
+        return null;
     }
 
-    private Object callImpl(String name, FunctionDescriptor fd, Object... args) {
-        var function = getFunctionImpl(name, fd);
-
-        try {
-            if (args.length == 0) {
-                return function.invoke();
-            } else {
-                return function.invokeWithArguments(Arrays.asList(args));
-            }
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
+    private Object callImpl(String name, Object fd, Object... args) {
+        // Java 17 compatibility: return default values
+        log.warning("Foreign Function calls are not supported in Java 17. Function: " + name);
+        return 0; // Default return value
     }
 
     public void execute(Consumer<ForeignFunctionContext> functionCall) {
@@ -174,7 +129,7 @@ public final class ForeignFunctionCaller {
     }
 
     public void unload() {
-        unload(_ -> {});
+        unload(context -> {});
     }
 
     /**
@@ -193,46 +148,45 @@ public final class ForeignFunctionCaller {
 
     public final class ForeignFunctionContext {
 
-        private Arena arena;
-        private Linker linker;
-        private List<SymbolLookup> lookups;
-
-        public ForeignFunctionContext(Arena arena, Linker linker, List<SymbolLookup> lookups) {
-            this.arena = arena;
-            this.linker = linker;
-            this.lookups = lookups;
+        public ForeignFunctionContext() {
+            // Java 17 compatibility constructor
         }
 
-        public Arena getArena() {
-            return arena;
+        public Object getArena() {
+            log.warning("Arena not available in Java 17");
+            return null;
         }
 
-        public Linker getLinker() {
-            return linker;
+        public Object getLinker() {
+            log.warning("Linker not available in Java 17");
+            return null;
         }
 
-        public List<SymbolLookup> getLookups() {
-            return new ArrayList<>(lookups);
+        public List<Object> getLookups() {
+            log.warning("SymbolLookup not available in Java 17");
+            return new ArrayList<>();
         }
 
-        public MethodHandle getFunction(String name, FunctionDescriptor fd) {
+        public MethodHandle getFunction(String name, Object fd) {
             return getFunctionImpl(name, fd);
         }
 
-        public Object call(String name, FunctionDescriptor fd, Object... args) {
+        public Object call(String name, Object fd, Object... args) {
             return callImpl(name, fd, args);
         }
 
         public void callVoidNoArg(String name) {
-            callImpl(name, FunctionDescriptor.ofVoid());
+            callImpl(name, null);
         }
 
-        public MemorySegment allocateIntArray(int length) {
-            return arena.allocate(ValueLayout.JAVA_INT, length);
+        public Object allocateIntArray(int length) {
+            log.warning("MemorySegment allocation not available in Java 17");
+            return null;
         }
 
-        public MemorySegment allocateCharArrayFrom(String s) {
-            return arena.allocateFrom(s);
+        public Object allocateCharArrayFrom(String s) {
+            log.warning("MemorySegment allocation not available in Java 17");
+            return null;
         }
     }
 }

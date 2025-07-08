@@ -17,8 +17,8 @@ import java.util.List;
 public abstract class Pathfinder<T extends TraversableCell> {
 
     private TraversableGrid<T> grid;
-    private CellVisitListener<T> visitListener = _ -> {};
-    private PathFoundListener<T> pathListener = _ -> {};
+    private CellVisitListener<T> visitListener = cell -> {};
+    private PathFoundListener<T> pathListener = path -> {};
 
     public Pathfinder(TraversableGrid<T> grid) {
         this.grid = grid;
