@@ -61,6 +61,7 @@ internal object EntityHelper {
         
         // Add components without requirements first
         componentsByRequirement[false]?.forEach { component ->
+            @Suppress("UNCHECKED_CAST")
             if (!copy.hasComponent(component.javaClass as Class<out Component>)) {
                 copy.addComponent(component.copy())
             }
@@ -68,6 +69,7 @@ internal object EntityHelper {
         
         // Add components with requirements second
         componentsByRequirement[true]?.forEach { component ->
+            @Suppress("UNCHECKED_CAST")
             if (!copy.hasComponent(component.javaClass as Class<out Component>)) {
                 copy.addComponent(component.copy())
             }

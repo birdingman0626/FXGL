@@ -141,7 +141,11 @@ class PropertyMap : SerializableType {
 
         listeners.filter { it.key.propertyName == propertyName }.forEach { (key, listener) ->
             // clean up all non-removed JavaFX listeners for given [propertyName]
-            (get(key.propertyName) as ObservableValue<Any>).removeListener(listener as ChangeListener<Any>)
+            @Suppress("UNCHECKED_CAST")
+            val observableValue = get(key.propertyName) as ObservableValue<Any>
+            @Suppress("UNCHECKED_CAST")
+            val changeListener = listener as ChangeListener<Any>
+            observableValue.removeListener(changeListener)
         }
 
         // remove all FXGL listeners for given [propertyName]

@@ -103,7 +103,7 @@ fun merge(images: List<Image>): Image {
     if (images.size == 1)
         return images.first()
 
-    val width = images.sumBy { it.width.toInt() }
+    val width = images.sumOf { it.width.toInt() }
     val height = images.map { it.height.toInt() }.maxOrNull() ?: 0
 
     val image = WritableImage(width, height)

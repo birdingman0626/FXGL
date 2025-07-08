@@ -256,6 +256,7 @@ class Input {
                     return
                 }
 
+                @Suppress("UNCHECKED_CAST")
                 (it as EventHandler<Event>).handle(event)
             }
 

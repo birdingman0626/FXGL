@@ -90,18 +90,10 @@ public final class Body {
     private Entity entity;
 
     Body(BodyDef bd, World world) {
-        this.world = world;
-        broadPhase = world.getContactManager().broadPhase;
-        init(bd);
-    }
-    
-    /**
-     * Initialize or reinitialize this body with the given definition.
-     * Used for both construction and recycling.
-     */
-    public void init(BodyDef bd) {
         checkValid(bd);
 
+        this.world = world;
+        broadPhase = world.getContactManager().broadPhase;
         userData = bd.getUserData();
 
         m_flags = 0;
@@ -1194,54 +1186,5 @@ public final class Body {
         // m_xf.position = m_sweep.c - Mul(m_xf.R, m_sweep.localCenter);
         Rotation.mulToOutUnsafe(m_xf.q, m_sweep.localCenter, m_xf.p);
         m_xf.p.mulLocal(-1).addLocal(m_sweep.c);
-    }
-    
-    /**
-     * Reset this body to its initial state for recycling.
-     * This clears all state but keeps the world reference.
-     */
-    public void reset() {
-        // Clear all flags except active
-        m_flags = e_activeFlag;
-        
-        // Reset position and velocity
-        m_xf.p.setZero();
-        m_xf.q.setIdentity();
-        m_sweep.localCenter.setZero();
-        m_sweep.c0.setZero();
-        m_sweep.c.setZero();
-        m_sweep.a0 = 0.0f;
-        m_sweep.a = 0.0f;
-        m_sweep.alpha0 = 0.0f;
-        
-        linearVelocity.setZero();
-        angularVelocity = 0.0f;
-        
-        // Reset forces
-        m_force.setZero();
-        m_torque = 0.0f;
-        
-        // Reset mass properties
-        m_mass = 1.0f;
-        m_invMass = 1.0f;
-        m_I = 0.0f;
-        m_invI = 0.0f;
-        
-        // Reset type
-        type = BodyType.DYNAMIC;
-        
-        // Clear lists
-        m_jointList = null;
-        m_contactList = null;
-        
-        // Reset sleep state
-        isSleepingAllowed = true;
-        sleepTime = 0.0f;
-        
-        // Reset island index
-        m_islandIndex = 0;
-        
-        // Reset entity reference
-        entity = null;
     }
 }
