@@ -31,9 +31,8 @@ class UDPClient<T>(val ip: String, val port: Int, private val config: UDPClientC
     private var socket: DatagramSocket? = null
 
     override fun connect() {
-        // TODO: exception handling
-
-        DatagramSocket().use {
+        try {
+            DatagramSocket().use {
             socket = it
             it.connect(InetAddress.getByName(ip), port)
 
@@ -74,10 +73,17 @@ class UDPClient<T>(val ip: String, val port: Int, private val config: UDPClientC
                 onConnectionClosed(connection)
             }
         }
+        } catch (e: Exception) {
+            log.warning("Exception during UDP client connection: ${e.message}", e)
+            throw RuntimeException("Failed to connect UDP client: ${e.message}", e)
+        }
     }
 
-    // TODO: extract into common between UDPServer
     override fun disconnect() {
+        disconnectCommon()
+    }
+
+    private fun disconnectCommon() {
         if (isStopped) {
             log.warning("Attempted to stop a client that is already stopped")
             return

@@ -63,6 +63,9 @@ class DialogueScene(private val sceneService: SceneService) : SubScene() {
     internal lateinit var audioPlayer: AudioPlayer
 
     private lateinit var dialogueScriptRunner: DialogueScriptRunner
+    
+    // Track currently playing dialogue audio so we can stop it when needed
+    private var currentDialogueAudio: Music? = null
 
     init {
         val topLine = Rectangle(0.0, 150.0)
@@ -209,8 +212,7 @@ class DialogueScene(private val sceneService: SceneService) : SubScene() {
             graph.removeNode(subDialogueNode)
 
             // connect the source and target with a graph
-            // TODO:
-            //graph.appendGraph(source, target, subGraph)
+            graph.appendGraph(source, target, subGraph)
         }
 
         currentNode = graph.startNode
@@ -224,6 +226,10 @@ class DialogueScene(private val sceneService: SceneService) : SubScene() {
      * Terminates currently active dialogue and closes the dialogue scene.
      */
     fun endDialogue() {
+        // Stop any currently playing dialogue audio
+        currentDialogueAudio?.let { audioPlayer.stopMusic(it) }
+        currentDialogueAudio = null
+        
         topText.text = ""
         boxPlayerLines.opacity = 0.0
         animation2.onFinished = Runnable {
@@ -280,8 +286,8 @@ class DialogueScene(private val sceneService: SceneService) : SubScene() {
     private fun handleFunctionNode(functionNode: FunctionNode) {
         val id = graph.findNodeID(functionNode)
 
-        // TODO: design key prefixes for dialogue created vars
-        val varName = "DialogueScene.function.numTimesCalled.$id"
+        // Use structured key prefix for dialogue variables to avoid conflicts
+        val varName = "dialogue.${graph.uniqueID}.function.$id.numTimesCalled"
 
         if (!localVars.exists(varName)) {
             localVars.setValue(varName, 0)
@@ -373,10 +379,13 @@ class DialogueScene(private val sceneService: SceneService) : SubScene() {
         if (node.audioFileName.isEmpty())
             return
 
-        // TODO: store audio being played, so we can stop as appropriate
-        val audio = assetLoader.load<Music>(AssetType.MUSIC, assetLoader.getURL(node.audioFileName.replace("\\", "/")))
+        // Stop any currently playing dialogue audio
+        currentDialogueAudio?.let { audioPlayer.stopMusic(it) }
 
-        audioPlayer.stopMusic(audio)
+        // Load and play the new audio
+        val audio = assetLoader.load<Music>(AssetType.MUSIC, assetLoader.getURL(node.audioFileName.replace("\\", "/")))
+        currentDialogueAudio = audio
+        
         audioPlayer.playMusic(audio)
     }
 

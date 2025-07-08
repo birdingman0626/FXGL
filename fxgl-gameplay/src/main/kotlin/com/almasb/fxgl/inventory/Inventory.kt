@@ -135,17 +135,12 @@ class Inventory<T>(
             it.description = config.description
             it.view = config.view
             it.maxStackQuantity = config.maxStackQuantity
-
-            // TODO: should we delegate to incrementQuantity(item, amount)
-            it.incrementQuantity(quantity)
         }
 
         itemsData[item] = data
 
-        // add newly created stacks
-        items += data.stacks
-
-        return true
+        // Delegate to incrementQuantity for consistency and to ensure all logic is centralized
+        return incrementQuantity(item, quantity)
     }
 
     /**

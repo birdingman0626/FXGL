@@ -280,52 +280,34 @@ class DialogueGraph(
     }
 
     fun appendGraph(source: DialogueNode, target: DialogueNode, graph: DialogueGraph) {
-//        val start = graph.startNode
-//        val endNodes = graph.nodes.values.filter { it.type == END }
-//
-//        // convert start and end nodes into text nodes and add them to this graph
-//
-//        val newStart = TextNode(start.text)
-//        val newEndNodes = endNodes.map { TextNode(it.text) }
-//
-//        addNode(newStart)
-//        newEndNodes.forEach { addNode(it) }
-//
-//        // add the rest of the nodes "as is" to this graph
-//        graph.nodes.values
-//                .minus(start)
-//                .minus(endNodes)
-//                .forEach { addNode(it) }
-//
-//        // add the "internal" graph edges to this graph
-//        graph.edges
-//                .filter { containsNode(it.source) && containsNode(it.target) }
-//                .forEach {
-//                    if (it is DialogueChoiceEdge) {
-//                        addChoiceEdge(it.source, it.optionID, it.target)
-//                    } else {
-//                        addEdge(it.source, it.target)
-//                    }
-//                }
-//
-//        // add the "external" graph edges
-//        // form new chain source -> start -> ... -> endNodes -> target
-//
-//        addEdge(source, newStart)
-//        newEndNodes.forEach { addEdge(it, target) }
-//
-//        addEdge(newStart, graph.nextNode(start)!!)
-//        newEndNodes.forEach { endNode ->
-//            graph.edges
-//                    .filter { it.target.type == END }
-//                    .forEach {
-//                        if (it is DialogueChoiceEdge) {
-//                            addChoiceEdge(it.source, it.optionID, endNode)
-//                        } else {
-//                            addEdge(it.source, endNode)
-//                        }
-//                    }
-//        }
+        // Add all nodes from the sub-graph to this graph
+        graph.nodes.values.forEach { node ->
+            addNode(node)
+        }
+        
+        // Add all edges from the sub-graph to this graph
+        graph.edges.forEach { edge ->
+            if (edge.optionID != 0) {
+                // This is a choice edge (non-zero optionID)
+                addEdge(edge.source, edge.optionID, edge.target)
+            } else {
+                // This is a regular edge (optionID = 0)
+                addEdge(edge.source, edge.target)
+            }
+        }
+        
+        // Connect the source node to the start of the sub-graph
+        addEdge(source, graph.startNode)
+        
+        // Find all leaf nodes (nodes with no outgoing edges) in the sub-graph
+        // and connect them to the target node
+        val leafNodes = graph.nodes.values.filter { node ->
+            graph.edges.none { edge -> edge.source === node }
+        }
+        
+        leafNodes.forEach { leafNode ->
+            addEdge(leafNode, target)
+        }
     }
 
     /**

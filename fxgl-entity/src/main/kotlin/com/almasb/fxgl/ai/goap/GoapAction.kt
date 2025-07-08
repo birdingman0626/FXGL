@@ -7,6 +7,7 @@
 package com.almasb.fxgl.ai.goap
 
 import com.almasb.fxgl.core.collection.PropertyMap
+import com.almasb.fxgl.entity.Entity
 
 /**
  * @author Almas Baimagambetov (almaslvl@gmail.com)
@@ -32,6 +33,12 @@ open class GoapAction
      */
     var cost = 1f
 
+    /**
+     * An action often has to perform on an object.
+     * This is that object. Can be null.
+     */
+    var target: Entity? = null
+
     fun addPrecondition(key: String, value: Any) {
         preconditions.setValue(key, value)
     }
@@ -48,30 +55,30 @@ open class GoapAction
         effects.remove(key)
     }
 
+    /**
+     * Check if this action is available to run.
+     * This is called during planning to determine if the action can be considered.
+     */
+    open fun isAvailable(): Boolean = true
+
+    /**
+     * Called when the action is being executed.
+     * Implementation should perform the actual action logic.
+     * 
+     * @param tpf time per frame
+     * @return true if the action completed successfully, false otherwise
+     */
+    open fun perform(tpf: Double): Boolean = true
+
+    /**
+     * Called when the action needs to be cancelled.
+     * Implementation should clean up any resources or state.
+     */
+    open fun cancel() {
+        // Default implementation does nothing
+    }
+
     override fun toString(): String {
         return name
     }
 }
-
-//
-//    /**
-//     * An action often has to perform on an object.
-//     * This is that object. Can be null.
-//     */
-//    var target: Entity? = null
-//
-//    /**
-//     * Check if this action can run.
-//     * TODO: is available, rather than can run.
-//     */
-//    open fun canRun() = true
-//
-//    override fun onUpdate(tpf: Double) {
-//        // TODO: perform(tpf)
-//        perform()
-//    }
-//
-//    /**
-//     * Perform the action.
-//     */
-//    abstract fun perform()

@@ -167,7 +167,6 @@ class EntityInspector : FXGLScrollPane(), ComponentListener {
         innerBox.children += addComponentButton
         innerBox.children += addCustomComponentButton
 
-        // TODO: this is just a placeholder and needs to be updated
         entity!!.components.sortedBy { it.javaClass.simpleName }
                 .forEach { comp ->
                     innerBox.children += generateView(comp)
@@ -194,13 +193,46 @@ class EntityInspector : FXGLScrollPane(), ComponentListener {
                 .sortedBy { it.name }
                 .forEach { method ->
 
-                    // val textKey = FXGL.getUIFactoryService().newText(method.name.removeSuffix("Property"), Color.WHITE, 18.0)
                     val value = method.invoke(component)
-
-                    val view = getUIFactoryService().newPropertyView(method.name.removeSuffix("Property"), value)
+                    val propertyName = method.name.removeSuffix("Property")
+                    
+                    val view = getUIFactoryService().newPropertyView(propertyName, value)
+                    
+                    // Property views automatically handle real-time editing through JavaFX property binding
+                    // No additional setup needed for DoublePropertyView
 
                     pane.addRow(index++, view)
                 }
+
+        // Add callable methods (void methods with no parameters)
+        val callableMethods = component.javaClass.declaredMethods
+            .filter { method ->
+                method.returnType == Void.TYPE &&
+                method.parameterCount == 0 &&
+                !method.name.endsWith("Property") &&
+                method.name != "onAdded" && method.name != "onRemoved" &&
+                method.name != "onUpdate" && method.name != "copy"
+            }
+            .sortedBy { it.name }
+
+        if (callableMethods.isNotEmpty()) {
+            pane.addRow(index++, FXGL.getUIFactoryService().newText("Methods:", Color.LIGHTBLUE, 16.0))
+            
+            callableMethods.forEach { method ->
+                val btnMethod = FXGLButton(method.name + "()")
+                btnMethod.setOnAction {
+                    try {
+                        method.isAccessible = true
+                        method.invoke(component)
+                        // Optionally show success feedback
+                    } catch (e: Exception) {
+                        // Log error or show user feedback
+                        println("Error invoking method ${method.name}: ${e.message}")
+                    }
+                }
+                pane.addRow(index++, btnMethod)
+            }
+        }
 
         pane.addRow(index++, Text(""))
 
@@ -212,7 +244,17 @@ class EntityInspector : FXGLScrollPane(), ComponentListener {
     }
 
     override fun onRemoved(component: Component) {
-        // TODO:
+        // Find and remove the corresponding view from innerBox
+        val toRemove = innerBox.children.filterIsInstance<GridPane>()
+            .find { pane ->
+                // Check if this pane corresponds to the removed component
+                val titleText = pane.children.firstOrNull() as? Text
+                titleText?.text == component.javaClass.simpleName.removeSuffix("Component")
+            }
+        
+        toRemove?.let {
+            innerBox.children.remove(it)
+        }
     }
 }
 

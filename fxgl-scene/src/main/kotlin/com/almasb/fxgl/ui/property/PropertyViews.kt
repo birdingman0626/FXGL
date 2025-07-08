@@ -98,9 +98,15 @@ class EnumPropertyView(enumProperty: ObjectProperty<Enum<*>>) : ChoiceBox<Enum<*
 
         setItems(list)
         setValue(enumValue)
-        valueProperty().bindBidirectional(enumProperty)
 
-        // TODO: read only version
+        // Check if read-only property
+        val isReadOnly = enumProperty.javaClass.canonicalName.contains("ReadOnly")
+        if (isReadOnly) {
+            isDisabled = true
+            valueProperty().bind(enumProperty)
+        } else {
+            valueProperty().bindBidirectional(enumProperty)
+        }
     }
 }
 
@@ -108,8 +114,14 @@ class ColorPropertyViewFactory : PropertyViewFactory<Color, ColorPicker> {
     override fun makeView(value: ObjectProperty<Color>): ColorPicker {
         val picker = ColorPicker()
 
-        // TODO: handle read-only version
-        picker.valueProperty().bindBidirectional(value)
+        // Check if read-only property
+        val isReadOnly = value.javaClass.canonicalName.contains("ReadOnly")
+        if (isReadOnly) {
+            picker.isDisable = true
+            picker.valueProperty().bind(value)
+        } else {
+            picker.valueProperty().bindBidirectional(value)
+        }
 
         return picker
     }

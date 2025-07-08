@@ -29,13 +29,10 @@ object GoapPlanner {
              goalState: PropertyMap): Queue<GoapAction> {
 
         // reset the actions so we can start fresh with them
-        // TODO:
-        //availableActions.forEach { it.cancel() }
+        availableActions.forEach { it.cancel() }
 
         // check what actions can run
-        // TODO:
-        //val usableActions = availableActions.filter { it.canRun() }.toSet()
-        val usableActions = availableActions.toSet()
+        val usableActions = availableActions.filter { it.isAvailable() }.toSet()
 
         // we now have all actions that can run, stored in usableActions
 
@@ -120,7 +117,10 @@ object GoapPlanner {
         return newState
     }
 
-    // TODO: currently only supports boolean values
+    /**
+     * Check if all key-value pairs in this PropertyMap are satisfied by the other PropertyMap.
+     * Supports various value types: Boolean, Int, Float, Double, String, and numeric comparisons.
+     */
     private fun PropertyMap.isIn(other: PropertyMap): Boolean {
         var result = true
 
@@ -132,8 +132,25 @@ object GoapPlanner {
                 return@forEach
             }
 
-            // or doesn't match the value in other
-            if (value != other.getValue(key)) {
+            val otherValue = other.getValue<Any>(key)
+            
+            // check if values match based on type
+            val matches = when {
+                value == otherValue -> true
+                value is Number && otherValue is Number -> {
+                    // Support numeric comparisons for various number types
+                    value.toDouble() == otherValue.toDouble()
+                }
+                value is String && otherValue is String -> {
+                    value == otherValue
+                }
+                value is Boolean && otherValue is Boolean -> {
+                    value == otherValue
+                }
+                else -> false
+            }
+
+            if (!matches) {
                 result = false
                 return@forEach
             }

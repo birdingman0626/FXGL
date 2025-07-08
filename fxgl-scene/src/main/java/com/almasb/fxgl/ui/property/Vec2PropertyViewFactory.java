@@ -29,6 +29,15 @@ public class Vec2PropertyViewFactory implements PropertyViewFactory<Vec2, HBox> 
         var fieldY = new TextField();
         HBox view = new HBox(fieldX, fieldY);
 
+        // Check if this is a read-only property
+        boolean isReadOnly = value.getClass().getCanonicalName().contains("ReadOnly");
+        if (isReadOnly) {
+            fieldX.setEditable(false);
+            fieldY.setEditable(false);
+            fieldX.setDisable(true);
+            fieldY.setDisable(true);
+        }
+
         value.addListener((obs, o, newValue) -> {
             if (ignoreChangeProperty)
                 return;
@@ -36,19 +45,21 @@ public class Vec2PropertyViewFactory implements PropertyViewFactory<Vec2, HBox> 
             onPropertyChanged(value, view);
         });
 
-        fieldX.textProperty().addListener((obs, o, x) -> {
-            if (ignoreChangeView)
-                return;
+        if (!isReadOnly) {
+            fieldX.textProperty().addListener((obs, o, x) -> {
+                if (ignoreChangeView)
+                    return;
 
-            onViewChanged(value, view);
-        });
+                onViewChanged(value, view);
+            });
 
-        fieldY.textProperty().addListener((obs, o, y) -> {
-            if (ignoreChangeView)
-                return;
+            fieldY.textProperty().addListener((obs, o, y) -> {
+                if (ignoreChangeView)
+                    return;
 
-            onViewChanged(value, view);
-        });
+                onViewChanged(value, view);
+            });
+        }
 
         onPropertyChanged(value, view);
 
@@ -73,12 +84,21 @@ public class Vec2PropertyViewFactory implements PropertyViewFactory<Vec2, HBox> 
         var fieldX = (TextField) view.getChildren().get(0);
         var fieldY = (TextField) view.getChildren().get(1);
 
+        // Empty string validation
+        if (fieldX.getText().trim().isEmpty() || fieldY.getText().trim().isEmpty()) {
+            return; // Don't update if either field is empty
+        }
+
         ignoreChangeProperty = true;
 
-        value.getValue().x = Float.parseFloat(fieldX.getText());
-        value.getValue().y = Float.parseFloat(fieldY.getText());
+        try {
+            value.getValue().x = Float.parseFloat(fieldX.getText());
+            value.getValue().y = Float.parseFloat(fieldY.getText());
 
-        ((UpdatableObjectProperty<Vec2>)value).forceUpdateListeners(value.getValue(), value.getValue());
+            ((UpdatableObjectProperty<Vec2>)value).forceUpdateListeners(value.getValue(), value.getValue());
+        } catch (NumberFormatException e) {
+            // Ignore invalid input - keep previous values
+        }
 
         ignoreChangeProperty = false;
     }

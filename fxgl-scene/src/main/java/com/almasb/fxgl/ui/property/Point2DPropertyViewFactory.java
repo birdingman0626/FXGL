@@ -27,6 +27,15 @@ public class Point2DPropertyViewFactory implements PropertyViewFactory<Point2D, 
         var fieldY = new TextField();
         HBox view = new HBox(fieldX, fieldY);
 
+        // Check if this is a read-only property
+        boolean isReadOnly = value.getClass().getCanonicalName().contains("ReadOnly");
+        if (isReadOnly) {
+            fieldX.setEditable(false);
+            fieldY.setEditable(false);
+            fieldX.setDisable(true);
+            fieldY.setDisable(true);
+        }
+
         value.addListener((obs, o, newValue) -> {
             if (ignoreChangeProperty)
                 return;
@@ -34,19 +43,21 @@ public class Point2DPropertyViewFactory implements PropertyViewFactory<Point2D, 
             onPropertyChanged(value, view);
         });
 
-        fieldX.textProperty().addListener((obs, o, x) -> {
-            if (ignoreChangeView)
-                return;
+        if (!isReadOnly) {
+            fieldX.textProperty().addListener((obs, o, x) -> {
+                if (ignoreChangeView)
+                    return;
 
-            onViewChanged(value, view);
-        });
+                onViewChanged(value, view);
+            });
 
-        fieldY.textProperty().addListener((obs, o, y) -> {
-            if (ignoreChangeView)
-                return;
+            fieldY.textProperty().addListener((obs, o, y) -> {
+                if (ignoreChangeView)
+                    return;
 
-            onViewChanged(value, view);
-        });
+                onViewChanged(value, view);
+            });
+        }
 
         onPropertyChanged(value, view);
 

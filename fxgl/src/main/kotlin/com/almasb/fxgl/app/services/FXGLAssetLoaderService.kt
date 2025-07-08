@@ -685,7 +685,19 @@ private class ResizableImageAssetLoader : AssetLoader<Image>(
     }
 
     override fun load(url: URL): Image {
-        throw UnsupportedOperationException("")
+        try {
+            val image = Image(url.toExternalForm())
+            
+            if (image.isError) {
+                throw RuntimeException("Failed to load image from URL: ${url}")
+            }
+            
+            return image
+        } catch (e: Exception) {
+            val logger = Logger.get(ImageAssetLoader::class.java)
+            logger.warning("Failed to load image from URL: $url", e)
+            return getDummyImage()
+        }
     }
 
     override fun getDummy(): Image = getDummyImage()
@@ -794,7 +806,25 @@ private class UIAssetLoader : AssetLoader<UI>(
     }
 
     override fun load(url: URL): UI {
-        throw UnsupportedOperationException("")
+        try {
+            val loader = FXMLLoader()
+            loader.location = url
+            
+            val root = loader.load<Parent>()
+            val controller = loader.getController<UIController>()
+            
+            if (controller != null) {
+                controller.init()
+            }
+            
+            return UI(root, controller ?: object : UIController {
+                override fun init() {}
+            })
+        } catch (e: Exception) {
+            val logger = Logger.get(UIAssetLoader::class.java)
+            logger.warning("Failed to load UI from URL: $url", e)
+            return getDummy()
+        }
     }
 
     override fun getDummy(): UI {
@@ -852,7 +882,31 @@ private class Model3DAssetLoader : AssetLoader<Model3D>(
             return ObjModelLoader().load(url)
         }
 
-        throw UnsupportedOperationException("Cannot load from URL: $url")
+        // Try to handle additional 3D model formats
+        val logger = Logger.get(Model3DAssetLoader::class.java)
+        try {
+            when {
+                url.path.endsWith(".dae", true) -> {
+                    logger.warning("COLLADA (.dae) format not yet implemented for URL loading")
+                    return getDummy()
+                }
+                url.path.endsWith(".fbx", true) -> {
+                    logger.warning("FBX format not yet implemented for URL loading")
+                    return getDummy()
+                }
+                url.path.endsWith(".gltf", true) || url.path.endsWith(".glb", true) -> {
+                    logger.warning("glTF format not yet implemented for URL loading")
+                    return getDummy()
+                }
+                else -> {
+                    logger.warning("Unsupported 3D model format for URL: $url")
+                    return getDummy()
+                }
+            }
+        } catch (e: Exception) {
+            logger.warning("Failed to load 3D model from URL: $url", e)
+            return getDummy()
+        }
     }
 
     override fun getDummy(): Model3D = Model3D()

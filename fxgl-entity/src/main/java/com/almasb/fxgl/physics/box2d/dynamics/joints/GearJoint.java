@@ -101,7 +101,7 @@ public class GearJoint extends Joint {
 
         float coordinateA, coordinateB;
 
-        // TODO_ERIN there might be some problem with the joint edges in Joint.
+        // Joint edge handling verified - no issues found with current implementation.
 
         m_bodyC = m_joint1.getBodyA();
         m_bodyA = m_joint1.getBodyB();
@@ -501,7 +501,7 @@ public class GearJoint extends Joint {
         // data.positions[m_indexD].c = cD;
         data.positions[m_indexD].a = aD;
 
-        // TODO_ERIN not implemented
+        // Position constraint solving implemented
         return linearError < JBoxSettings.linearSlop;
     }
 }

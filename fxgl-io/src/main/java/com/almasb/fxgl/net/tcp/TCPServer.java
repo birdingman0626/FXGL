@@ -51,12 +51,13 @@ public final class TCPServer<T> extends Server<T> {
             }
 
         } catch (Exception e) {
-
-            // TODO: check logic here
-
+            // Only throw exception if we didn't stop intentionally
             if (!isStopped) {
-                throw new RuntimeException("Failed to start: " + e.getMessage(), e);
+                log.warning("Exception during TCP server operation: " + e.getMessage(), e);
+                throw new RuntimeException("Failed to start TCP server: " + e.getMessage(), e);
             }
+            // If we stopped intentionally, log at debug level
+            log.debug("TCP server stopped normally: " + e.getMessage());
         }
 
         onStoppedListening();

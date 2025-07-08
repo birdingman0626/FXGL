@@ -13,8 +13,8 @@ import com.almasb.fxgl.physics.box2d.collision.WorldManifold;
 import com.almasb.fxgl.physics.box2d.collision.shapes.Shape;
 import com.almasb.fxgl.physics.box2d.common.JBoxSettings;
 import com.almasb.fxgl.physics.box2d.common.Mat22;
-import com.almasb.fxgl.physics.box2d.common.Rotation;
 import com.almasb.fxgl.physics.box2d.common.Transform;
+import com.almasb.fxgl.physics.box2d.common.Rotation;
 import com.almasb.fxgl.physics.box2d.dynamics.Body;
 import com.almasb.fxgl.physics.box2d.dynamics.Fixture;
 import com.almasb.fxgl.physics.box2d.dynamics.TimeStep;
@@ -301,7 +301,21 @@ public final class ContactSolver {
                     vc.K.invertToOut(vc.normalMass);
                 } else {
                     // The constraints are redundant, just use one.
-                    // TODO_ERIN use deepest?
+                    // Use the deepest contact point (highest separation/penetration)
+                    ContactPositionConstraint posConstraint = m_positionConstraints[i];
+                    VelocityConstraintPoint vcp1_temp = vc.points[0];
+                    VelocityConstraintPoint vcp2_temp = vc.points[1];
+                    
+                    // Compare velocityBias to determine which point is deeper
+                    // VelocityBias is higher for deeper penetration
+                    if (vcp1_temp.velocityBias >= vcp2_temp.velocityBias) {
+                        // Point 1 is deeper, keep it
+                        vc.points[0] = vcp1_temp;
+                    } else {
+                        // Point 2 is deeper, move it to position 0
+                        vc.points[0] = vcp2_temp;
+                    }
+                    
                     vc.pointCount = 1;
                 }
             }

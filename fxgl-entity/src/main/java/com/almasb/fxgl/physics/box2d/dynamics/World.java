@@ -63,6 +63,7 @@ public final class World {
     private boolean stepComplete = true;
 
     private Array<Body> bodies = new Array<>(WORLD_POOL_SIZE);
+    private Array<Body> bodyPool = new Array<>(WORLD_POOL_SIZE);
 
     private Array<Joint> joints = new Array<>();
 
@@ -88,7 +89,18 @@ public final class World {
     public Body createBody(BodyDef def) {
         assertNotLocked();
 
-        Body b = new Body(def, this);
+        Body b;
+        
+        // Try to reuse a body from the pool
+        if (!bodyPool.isEmpty()) {
+            b = bodyPool.get(bodyPool.size() - 1);
+            bodyPool.removeIndex(bodyPool.size() - 1);
+            b.reset();
+            // Reinitialize with new definition
+            b.init(def);
+        } else {
+            b = new Body(def, this);
+        }
 
         bodies.add(b);
 
@@ -108,7 +120,12 @@ public final class World {
         body.destroy();
 
         bodies.removeValueByIdentity(body);
-        // jbox2dTODO djm recycle body
+        
+        // Recycle body for reuse
+        if (bodyPool.size() < WORLD_POOL_SIZE) {
+            body.reset();
+            bodyPool.add(body);
+        }
     }
 
     /**

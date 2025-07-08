@@ -13,19 +13,20 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
- * TODO: WIP
- *
  * FFC is a wrapper around a native library, allowing
  * calls to native functions as if they were Java functions.
  *
  * Each FFC has its own single thread that executes all call functions.
  *
- * TODO: explore MemoryLayout for non-primitive structs
+ * Note: In Java 17, the Foreign Function & Memory API is not available,
+ * so this implementation provides compatibility stubs that log warnings
+ * and return default values.
  *
  * @author Almas Baim (https://github.com/AlmasB)
  */
@@ -41,6 +42,7 @@ public final class ForeignFunctionCaller {
     private AtomicBoolean isRunning = new AtomicBoolean(true);
 
     private Thread thread;
+    private CountDownLatch loadedLatch = new CountDownLatch(1);
 
     private Runnable onLoaded = EmptyRunnable.INSTANCE;
     private Runnable onUnloaded = EmptyRunnable.INSTANCE;
@@ -75,8 +77,13 @@ public final class ForeignFunctionCaller {
         thread.setDaemon(true);
         thread.start();
 
-        // TODO: wait until libs are loaded and loop entered
-        // use CountDownLatch
+        // Wait until libs are loaded and loop entered
+        try {
+            loadedLatch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warning("Interrupted while waiting for libraries to load", e);
+        }
     }
 
     private void threadTask() {
@@ -90,6 +97,9 @@ public final class ForeignFunctionCaller {
         
         log.debug("Java 17 compatibility context created (GL disabled)");
         onLoaded.run();
+        
+        // Signal that loading is complete
+        loadedLatch.countDown();
 
         while (isRunning.get()) {
             try {
@@ -137,13 +147,17 @@ public final class ForeignFunctionCaller {
      * do not schedule any other execute() operations within the call
      */
     public void unload(Consumer<ForeignFunctionContext> libExitFunctionCall) {
-        // TODO: isLoaded = false?
-        // TODO: if not loaded ignore?
+        if (!isLoaded) {
+            log.warning("Libraries are not loaded, ignoring unload request");
+            return;
+        }
 
         execute(context -> {
             libExitFunctionCall.accept(context);
             isRunning.set(false);
         });
+        
+        isLoaded = false;
     }
 
     public final class ForeignFunctionContext {

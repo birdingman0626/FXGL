@@ -22,7 +22,8 @@ import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.ReadOnlyDoubleWrapper
 
 /**
- * TODO: symmetric remove API, e.g. removeReplicationSender()
+ * Manages multiplayer connections and data replication across network.
+ * Provides functionality for entity, input, property, and event replication.
  *
  * @author Almas Baimagambetov (almaslvl@gmail.com)
  */
@@ -39,10 +40,50 @@ class MultiplayerService : EngineService() {
         replicatedEntitiesMap[connection] = data
     }
 
+    /**
+     * Removes a connection and cleans up all associated data.
+     */
+    fun unregisterConnection(connection: Connection<Bundle>) {
+        val data = replicatedEntitiesMap.remove(connection)
+        if (data != null) {
+            cleanUpConnection(data)
+            log.debug("Connection unregistered and cleaned up")
+        } else {
+            log.warning("Attempted to unregister unknown connection")
+        }
+    }
+
+    private fun cleanUpConnection(data: ConnectionData) {
+        val connection = data.connection
+        
+        // Clean up all entities associated with this connection
+        data.entities.clear()
+        
+        // Clean up all replication handlers
+        inputReplicationSenders.remove(connection)
+        propertyReplicationSenders.remove(connection)
+        inputReplicationReceivers.remove(connection)
+        propertyReplicationReceivers.remove(connection)
+        eventReplicationSenders.remove(connection)
+        eventReplicationReceivers.remove(connection)
+        entityReplicationReceivers.remove(connection)
+        
+        // Clear event bus handlers (EventBus handles this automatically when it's GC'd)
+        // But we can explicitly help by clearing any references
+        data.eventBus.removeAllEventHandlers()
+    }
+
     private fun setUpNewConnection(data: ConnectionData) {
         // register event handler for the given connection
-        // TODO: how to clean up when the connection dies
         addEventReplicationReceiver(data.connection, data.eventBus)
+        
+        // Monitor connection state and clean up when it dies
+        data.connection.connectedProperty().addListener { _, _, isConnected ->
+            if (!isConnected) {
+                log.debug("Connection closed, cleaning up")
+                unregisterConnection(data.connection)
+            }
+        }
 
         data.eventBus.addEventHandler(ReplicationEvent.PING) { ping ->
             val timeRecv = System.nanoTime()
@@ -64,30 +105,44 @@ class MultiplayerService : EngineService() {
 
         val now = System.nanoTime()
 
-        // TODO: can (should) we move this to NetworkComponent to act on a per entity basis ...
         replicatedEntitiesMap.forEach { conn, data ->
-            fire(conn, PingReplicationEvent(now))
+            // Check if connection is still alive before sending data
+            if (conn.isConnected) {
+                fire(conn, PingReplicationEvent(now))
 
-            if (data.entities.isNotEmpty()) {
-                updateReplicatedEntities(conn, data.entities)
+                if (data.entities.isNotEmpty()) {
+                    updateReplicatedEntities(conn, data.entities)
+                }
+            } else {
+                // Connection died, schedule for cleanup
+                log.debug("Detected dead connection during update, scheduling cleanup")
+                unregisterConnection(conn)
             }
         }
     }
 
     /**
-     * @return round-trip time from this endpoint to given [connection]
+     * @return round-trip time from this endpoint to given [connection], or null if connection not found
      */
-    fun pingProperty(connection: Connection<Bundle>): ReadOnlyDoubleProperty {
-        // TODO: if no connection in map
-        return replicatedEntitiesMap[connection]!!.ping.readOnlyProperty
+    fun pingProperty(connection: Connection<Bundle>): ReadOnlyDoubleProperty? {
+        val data = replicatedEntitiesMap[connection]
+        if (data == null) {
+            log.warning("Attempted to get ping for unknown connection")
+            return null
+        }
+        return data.ping.readOnlyProperty
     }
 
     private fun updateReplicatedEntities(connection: Connection<Bundle>, entities: MutableList<Entity>) {
         val events = arrayListOf<ReplicationEvent>()
 
         entities.forEach {
-            // TODO: if not present?
-            val networkID = it.getComponent(NetworkComponent::class.java).id
+            val networkComponent = it.getComponentOptional(NetworkComponent::class.java)
+            if (!networkComponent.isPresent) {
+                log.warning("Entity missing NetworkComponent during replication update")
+                return@forEach
+            }
+            val networkID = networkComponent.get().id
 
             if (it.isActive) {
                 events += EntityUpdateEvent(networkID, it.x, it.y, it.z)
@@ -117,8 +172,11 @@ class MultiplayerService : EngineService() {
 
         val event = EntitySpawnEvent(networkComponent.id, entityName, NetworkSpawnData(spawnData))
 
-        // TODO: if not available
-        val data = replicatedEntitiesMap[connection]!!
+        val data = replicatedEntitiesMap[connection]
+        if (data == null) {
+            log.warning("Attempted to spawn entity on unknown connection")
+            return
+        }
         data.entities += entity
 
         fire(connection, event)
@@ -140,9 +198,12 @@ class MultiplayerService : EngineService() {
 
                         val e = gameWorld.spawn(entityName, spawnData)
 
-                        // TODO: show warning if not present
-                        e.getComponentOptional(NetworkComponent::class.java)
-                                .ifPresent { it.id = id }
+                        val networkComponent = e.getComponentOptional(NetworkComponent::class.java)
+                        if (networkComponent.isPresent) {
+                            networkComponent.get().id = id
+                        } else {
+                            log.warning("Spawned entity $entityName does not have NetworkComponent")
+                        }
                     }
 
                     is EntityUpdateEvent -> {
@@ -165,8 +226,16 @@ class MultiplayerService : EngineService() {
         }
     }
 
+    private val inputReplicationSenders = hashMapOf<Connection<Bundle>, TriggerListener>()
+    private val propertyReplicationSenders = hashMapOf<Connection<Bundle>, PropertyMapChangeListener>()
+    private val inputReplicationReceivers = hashMapOf<Connection<Bundle>, (Connection<Bundle>, Bundle) -> Unit>()
+    private val propertyReplicationReceivers = hashMapOf<Connection<Bundle>, (Connection<Bundle>, Bundle) -> Unit>()
+    private val eventReplicationSenders = hashMapOf<Connection<Bundle>, (ReplicationEvent) -> Unit>()
+    private val eventReplicationReceivers = hashMapOf<Connection<Bundle>, (Connection<Bundle>, Bundle) -> Unit>()
+    private val entityReplicationReceivers = hashMapOf<Connection<Bundle>, (Connection<Bundle>, Bundle) -> Unit>()
+
     fun addInputReplicationSender(connection: Connection<Bundle>, input: Input) {
-        input.addTriggerListener(object : TriggerListener() {
+        val listener = object : TriggerListener() {
             override fun onActionBegin(trigger: Trigger) {
 
                 val event = if (trigger.isKey) {
@@ -187,7 +256,20 @@ class MultiplayerService : EngineService() {
 
                 fire(connection, event)
             }
-        })
+        }
+        
+        input.addTriggerListener(listener)
+        inputReplicationSenders[connection] = listener
+    }
+
+    fun removeInputReplicationSender(connection: Connection<Bundle>, input: Input) {
+        val listener = inputReplicationSenders.remove(connection)
+        if (listener != null) {
+            input.removeTriggerListener(listener)
+            log.debug("Removed input replication sender for connection")
+        } else {
+            log.warning("Attempted to remove unknown input replication sender")
+        }
     }
 
     fun addPropertyReplicationSender(connection: Connection<Bundle>, map: PropertyMap) {

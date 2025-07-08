@@ -160,8 +160,16 @@ class DevService : EngineService() {
                 }
 
                 is Box3DShapeData -> {
-                    // not implemented
-                    Rectangle()
+                    // Render 3D box as 2D rectangle projection for debug view
+                    val bboxView = Rectangle()
+                    bboxView.widthProperty().value = data.width
+                    bboxView.heightProperty().value = data.height
+                    bboxView.visibleProperty().bind(
+                        bboxView.widthProperty().greaterThan(0).and(bboxView.heightProperty().greaterThan(0))
+                    )
+                    // Add visual indicator that this is a 3D shape
+                    bboxView.strokeDashArray.addAll(5.0, 5.0)
+                    bboxView
                 }
             }
 
