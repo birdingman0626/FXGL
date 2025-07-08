@@ -543,3 +543,514 @@ Based on comprehensive analysis of FXGL's current capabilities vs. 2024-2025 gam
 - Implementation priority should consider FXGL's focus on Java/JavaFX ecosystem
 - Some features may be addressable through third-party library integration
 - Consider community contributions for lower-priority items
+
+## Original FXGL Repository Analysis (2025-07-08)
+
+Based on comprehensive analysis of the original FXGL repository (AlmasB/FXGL), the following issues and features from the upstream repository should be considered for implementation in this Java 17 compatible fork:
+
+### Critical Priority (Active Bugs) ⚠️
+
+#### Performance & Stability Issues
+- **Particle System Object Pool Bug** (Original Issue #1417)
+  - Description: Particle objects not correctly recycled back to object pool
+  - Impact: Memory leaks and performance degradation in particle-heavy games
+  - Implementation: Medium complexity - requires object pool refactoring
+  - Java 17 Consideration: Memory management patterns may need updating
+
+- **Program Exit Exception** (Original Issue #1393)
+  - Description: Exception handling during application shutdown
+  - Impact: Unclean exits, potential data loss
+  - Implementation: Simple complexity - exception handling improvement
+  - Java 17 Consideration: May benefit from enhanced exception handling
+
+- **IllegalAccessError with MassData** (Original Issue #1386)
+  - Description: Physics system access violation in Box2D integration
+  - Impact: Runtime crashes in physics-heavy games
+  - Implementation: Medium complexity - requires physics engine debugging
+  - Java 17 Consideration: Module system access restrictions
+
+#### Development Workflow Issues
+- **Tiled Map Editor Performance** (Original Issue #1420)
+  - Description: Slow performance when working with multiple layers
+  - Impact: Poor developer experience with level editing
+  - Implementation: Complex - requires profiling and optimization
+  - Java 17 Consideration: May benefit from newer JVM optimizations
+
+- **Animated Texture Acceleration Bug** (Original Issue #1380)
+  - Description: AnimatedTexture not respecting acceleration settings
+  - Impact: Incorrect animation behavior
+  - Implementation: Simple complexity - animation calculation fix
+  - Java 17 Consideration: None specific
+
+### High Priority (Feature Requests) 🚀
+
+#### Physics & Gameplay Enhancements
+- **Physics Component Acceleration Control** (Original Issue #1411)
+  - Description: Add ability to define acceleration in velocity of physics component
+  - Impact: More realistic physics simulation capabilities
+  - Implementation: Medium complexity - physics API extension
+  - Community Request: High demand feature
+
+- **Game Window Size Constraints** (Original Issue #1410)
+  - Description: Set minimum and maximum size limits for game window
+  - Impact: Better window management and responsive design
+  - Implementation: Simple complexity - window configuration API
+  - Community Request: Frequently requested feature
+
+#### Audio System Improvements
+- **Volume Control Enhancement** (Original PR #1311)
+  - Description: Volume control of Music & Sound with property binding
+  - Impact: Better audio management and user experience
+  - Implementation: Medium complexity - audio service refactoring
+  - Status: Pull request pending review
+
+#### UI & Menu System
+- **Menu Layout Responsiveness** (Original PR #1356)
+  - Description: Improve FXGLDefaultMenu layout responsiveness
+  - Impact: Better UI adaptation to different screen sizes
+  - Implementation: Medium complexity - layout system improvement
+  - Status: Pull request pending review
+
+#### 3D Support Expansion
+- **3D Entity Click Event Support** (Original Issue #1375)
+  - Description: Add click event handling for 3D entities when 3D mode enabled
+  - Impact: Essential for 3D game interaction
+  - Implementation: Complex - 3D picking and event system integration
+  - Strategic Value: Aligns with 3D expansion goals
+
+#### Animation System
+- **Animation Control Enhancement** (Original PR #1287)
+  - Description: Add play & playReverse methods for Animation class
+  - Impact: More flexible animation control
+  - Implementation: Simple complexity - API extension
+  - Status: Pull request pending review
+
+#### Component System
+- **ViewComponent Child Positioning** (Original PR #1362)
+  - Description: Option to add child at first position to ViewComponent
+  - Impact: More flexible UI component composition
+  - Implementation: Simple complexity - API enhancement
+  - Status: Pull request pending review
+
+- **Layout Bounds Listening** (Original PR #1365)
+  - Description: Listen for changes in layout bounds in FXGLDefaultMenu
+  - Impact: Reactive UI layout updates
+  - Implementation: Simple complexity - event listener addition
+  - Status: Pull request pending review
+
+### Medium Priority (Platform & Compatibility) 🔧
+
+#### Cross-Platform Support
+- **Raspberry Pi Support** (Roadmap Discussion #1089)
+  - Description: Optimize FXGL for ARM-based single board computers
+  - Impact: Expands deployment target platforms
+  - Implementation: Complex - platform-specific optimizations
+  - Strategic Value: Educational and IoT gaming applications
+
+- **Steam Deck Compatibility** (Roadmap Discussion #1089)
+  - Description: Ensure FXGL games run properly on Steam Deck
+  - Impact: Access to handheld gaming market
+  - Implementation: Medium complexity - input and display adaptation
+  - Market Value: Growing handheld gaming segment
+
+#### Platform Detection & Integration
+- **Embedded Platform Detection** (Original Issue #1079)
+  - Description: Better detection and handling of embedded platforms
+  - Impact: Improved platform-specific behavior
+  - Implementation: Medium complexity - platform detection enhancement
+  - Java 17 Consideration: May leverage newer system APIs
+
+- **MacOS JavaFX Exit Error** (Original Issue #846)
+  - Description: Handle JavaFX platform exit errors on macOS
+  - Impact: Clean application shutdown on macOS
+  - Implementation: Simple complexity - platform-specific error handling
+  - Platform Priority: Critical for macOS users
+
+#### Performance Optimization
+- **Loading Screen Performance** (Original Issue #1382)
+  - Description: Improve loading screen responsiveness and resource management
+  - Impact: Better user experience during game startup
+  - Implementation: Medium complexity - resource loading optimization
+  - Java 17 Consideration: May benefit from newer I/O optimizations
+
+#### External Integration
+- **Steam SDK Integration** (Roadmap Discussion #1089)
+  - Description: Add Steam platform features (achievements, workshop, etc.)
+  - Impact: Steam platform integration for PC gaming
+  - Implementation: Complex - external SDK integration
+  - Commercial Value: Essential for Steam distribution
+
+### Low Priority (Developer Experience) 📚
+
+#### Development Tools
+- **Module Version Information** (Original Issue #1091)
+  - Description: Expose version information for individual FXGL modules
+  - Impact: Better dependency management and debugging
+  - Implementation: Simple complexity - build system enhancement
+  - Developer Value: Debugging and support assistance
+
+- **Unit Test Coverage** (Original Issue #368)
+  - Description: Improve unit test coverage across FXGL modules
+  - Impact: Better code quality and regression prevention
+  - Implementation: Ongoing effort - test writing
+  - Quality Value: Long-term maintenance benefit
+
+### Implementation Roadmap
+
+#### Phase 1: Critical Bug Fixes (Immediate - 1-3 months)
+1. Fix particle system object pool recycling
+2. Resolve program exit exception handling
+3. Address IllegalAccessError in physics system
+4. Fix animated texture acceleration bug
+
+#### Phase 2: High-Impact Features (3-6 months)
+1. Add physics component acceleration control
+2. Implement window size constraints
+3. Integrate volume control enhancements
+4. Add 3D entity click event support
+5. Merge pending animation and UI improvements
+
+#### Phase 3: Platform Expansion (6-12 months)
+1. Raspberry Pi optimization
+2. Steam Deck compatibility testing
+3. Enhanced platform detection
+4. Steam SDK integration planning
+
+#### Phase 4: Developer Experience (Ongoing)
+1. Increase unit test coverage
+2. Add module version information
+3. Performance profiling and optimization
+4. Documentation improvements
+
+### Community Contribution Opportunities
+
+#### High-Value Contributions
+- Particle system optimization
+- 3D interaction system
+- Platform-specific optimizations
+- Performance profiling tools
+
+#### Moderate-Value Contributions
+- Animation system enhancements
+- UI layout improvements
+- Audio system features
+- Cross-platform testing
+
+#### Documentation Contributions
+- API documentation
+- Tutorial content
+- Platform-specific guides
+- Migration documentation
+
+### Java 17 Compatibility Notes
+
+#### Already Addressed
+- Module system compatibility
+- Deprecated API migration
+- Lambda syntax updates
+- Collection API modernization
+
+#### Areas Needing Attention
+- Foreign Function Memory API (disabled for compatibility)
+- Platform-specific module access
+- Performance optimization opportunities
+- Enhanced exception handling
+
+#### Java 17 Advantages
+- Better memory management
+- Improved garbage collection
+- Enhanced platform detection APIs
+- Stronger type safety
+
+### Original Repository Status
+- **Current Version**: 21.1 (March 2024)
+- **Java Requirements**: Java 21+ in original
+- **Active Issues**: 45+ open issues
+- **Active PRs**: 8 pending pull requests
+- **Community**: Active development and discussion
+- **License**: MIT (compatible with forking)
+
+## Notes on Original Repository Integration
+- Regular monitoring of upstream issues recommended
+- Cherry-pick valuable fixes and features
+- Maintain Java 17 compatibility constraints
+- Document deviations from original implementation
+- Consider contributing fixes back to original repository
+
+---
+
+# Original FXGL Repository Issues & Feature Requests
+
+*Based on analysis of the original FXGL repository (AlmasB/FXGL) as of 2025-07-08*
+
+This section contains prioritized issues, features, and improvements from the original FXGL repository that would be valuable to implement in the Java 17 compatible fork.
+
+## Critical Priority (Active Bugs)
+
+### Core Engine Issues
+- **Particle System Object Pool Bug** (Issue #1417)
+  - **Description**: Incorrect reference of Point2D used for recycling process
+  - **Source**: GitHub Issue #1417 
+  - **Impact**: Performance degradation and potential memory leaks
+  - **Complexity**: Medium - requires object pool refactoring
+  - **Rationale**: Critical for maintaining performance in particle-heavy games
+
+- **Program Exit Exception** (Issue #1393)
+  - **Description**: Unexpected error when closing FXGL applications
+  - **Source**: GitHub Issue #1393
+  - **Impact**: Poor user experience, potential data loss
+  - **Complexity**: Medium - requires proper shutdown sequence
+  - **Rationale**: Essential for stable application lifecycle
+
+- **IllegalAccessError with MassData** (Issue #1386)
+  - **Description**: Access modifier problem affecting physics calculations
+  - **Source**: GitHub Issue #1386
+  - **Impact**: Physics system instability
+  - **Complexity**: Simple - likely reflection access issue
+  - **Rationale**: Critical for physics-based games
+
+### Performance Issues
+- **Tiled Map Editor Performance** (Issue #1420)
+  - **Description**: Laggy behavior when creating more than three layers
+  - **Source**: GitHub Issue #1420
+  - **Impact**: Limited level design capabilities
+  - **Complexity**: Complex - requires rendering optimization
+  - **Rationale**: Essential for professional level design workflow
+
+- **Animated Texture Acceleration** (Issue #1380)
+  - **Description**: Performance issues on first launch of animated textures
+  - **Source**: GitHub Issue #1380
+  - **Impact**: Poor initial user experience
+  - **Complexity**: Medium - initialization timing issue
+  - **Rationale**: Improves polish and user experience
+
+## High Priority (Feature Requests)
+
+### Physics System Enhancements
+- **Physics Component Acceleration** (Issue #1411)
+  - **Description**: Define acceleration in velocity of physics component
+  - **Source**: GitHub Issue #1411
+  - **Impact**: More realistic physics behavior
+  - **Complexity**: Medium - requires physics engine integration
+  - **Rationale**: Common request for physics-based games
+
+### UI/UX Improvements
+- **Game Window Size Constraints** (Issue #1410)
+  - **Description**: Set min and max size of the game window
+  - **Source**: GitHub Issue #1410
+  - **Impact**: Better responsive design support
+  - **Complexity**: Simple - JavaFX window API usage
+  - **Rationale**: Standard feature for desktop applications
+
+- **Volume Control Enhancement** (PR #1311)
+  - **Description**: Allow volume control of Music & Sound with property
+  - **Source**: Pull Request #1311 by DeathPhoenix22
+  - **Impact**: Better audio management
+  - **Complexity**: Simple - property binding implementation
+  - **Rationale**: Essential for accessibility and user preferences
+
+- **Menu Responsiveness Fix** (PR #1356)
+  - **Description**: FXGLDefaultMenu layout is not responsive
+  - **Source**: Pull Request #1356 by DaleHuntGB
+  - **Impact**: Better UI adaptation to different screen sizes
+  - **Complexity**: Medium - requires layout system changes
+  - **Rationale**: Important for cross-platform compatibility
+
+### 3D Support
+- **3D Entity Click Event Support** (Issue #1375)
+  - **Description**: Improve 3D interaction capabilities
+  - **Source**: GitHub Issue #1375
+  - **Impact**: Enhanced 3D game development
+  - **Complexity**: Complex - requires 3D ray casting
+  - **Rationale**: Essential for 3D game interactivity
+
+### Animation System
+- **Animation Control Enhancement** (PR #1287)
+  - **Description**: New methods play & playReverse of Animation class
+  - **Source**: Pull Request #1287 by chengenzhao
+  - **Impact**: More flexible animation control
+  - **Complexity**: Medium - animation state management
+  - **Rationale**: Common animation pattern in games
+
+### Component System
+- **ViewComponent Child Positioning** (PR #1362)
+  - **Description**: Option to add child at first position to ViewComponent
+  - **Source**: Pull Request #1362 by DeathPhoenix22
+  - **Impact**: Better UI component management
+  - **Complexity**: Simple - collection manipulation
+  - **Rationale**: Improves UI flexibility
+
+- **Layout Bounds Listening** (PR #1365)
+  - **Description**: Listen for changes in layout bounds in FXGLDefaultMenu
+  - **Source**: Pull Request #1365 by Bart-del
+  - **Impact**: Better responsive menu rendering
+  - **Complexity**: Medium - JavaFX property binding
+  - **Rationale**: Improves menu system reliability
+
+## Medium Priority (Platform & Compatibility)
+
+### Cross-Platform Support
+- **Raspberry Pi Support** (Roadmap Discussion #1089)
+  - **Description**: Optimize FXGL for Raspberry Pi with better FPS and alternative inputs
+  - **Source**: FXGL 17 Roadmap Discussion #1089
+  - **Impact**: Expanded platform support
+  - **Complexity**: Complex - requires platform-specific optimizations
+  - **Rationale**: Growing interest in embedded gaming
+
+- **Steam Deck Compatibility** (Roadmap Discussion #1089)
+  - **Description**: Ensure FXGL games run well on Steam Deck
+  - **Source**: FXGL 17 Roadmap Discussion #1089
+  - **Impact**: Access to handheld gaming market
+  - **Complexity**: Medium - input and display adaptation
+  - **Rationale**: Emerging platform with growing user base
+
+- **Embedded Platform Detection** (Issue #1079)
+  - **Description**: Detect platform on embedded devices
+  - **Source**: GitHub Issue #1079
+  - **Impact**: Better platform-specific behavior
+  - **Complexity**: Simple - platform detection API
+  - **Rationale**: Essential for embedded deployments
+
+### Mobile Platform Issues
+- **MacOS JavaFX Exit Error** (Issue #846)
+  - **Description**: JavaFX error when exiting FXGL application on Mac
+  - **Source**: GitHub Issue #846
+  - **Impact**: Platform-specific stability issue
+  - **Complexity**: Medium - platform-specific debugging
+  - **Rationale**: Important for Mac users
+
+- **Loading Screen Performance** (Issue #1382)
+  - **Description**: Weird loading screen every time game starts
+  - **Source**: GitHub Issue #1382
+  - **Impact**: Poor user experience
+  - **Complexity**: Medium - startup sequence optimization
+  - **Rationale**: Affects all users on every game launch
+
+### SDK Integration
+- **Steam SDK Integration** (Roadmap Discussion #1089)
+  - **Description**: Integrate Steam SDK for achievements, leaderboards
+  - **Source**: FXGL 17 Roadmap Discussion #1089
+  - **Impact**: Professional game distribution features
+  - **Complexity**: Complex - requires native SDK integration
+  - **Rationale**: Essential for commercial Steam games
+
+## Low Priority (Developer Experience)
+
+### Version Information
+- **Module Version Information** (Issue #1091)
+  - **Description**: FXGL modules to include version information
+  - **Source**: GitHub Issue #1091
+  - **Impact**: Better dependency management
+  - **Complexity**: Simple - build system changes
+  - **Rationale**: Improves debugging and dependency tracking
+
+### Testing Infrastructure
+- **Unit Test Coverage** (Issue #368)
+  - **Description**: Many modules need more comprehensive unit tests
+  - **Source**: GitHub Issue #368
+  - **Impact**: Better code quality and reliability
+  - **Complexity**: Ongoing - requires test development
+  - **Rationale**: Essential for maintaining code quality
+
+### Enhanced Features from Analysis
+
+#### Advanced AI & Pathfinding
+- **Multi-directional A* Pathfinding** (Discussion #1331)
+  - **Description**: 4-8-16 direction A* pathfinding with performance optimizations
+  - **Source**: GitHub Discussion #1331
+  - **Impact**: More realistic and performant pathfinding
+  - **Complexity**: Complex - requires pathfinding algorithm optimization
+  - **Rationale**: Current pathfinding causes significant lag in complex scenarios
+
+#### Embedded Mode Support
+- **FXGL Embedded Mode** (Recent Enhancement)
+  - **Description**: Run FXGL inside existing JavaFX applications natively
+  - **Source**: Recent release notes
+  - **Impact**: Better integration with existing JavaFX applications
+  - **Complexity**: Medium - requires API design for embedded mode
+  - **Rationale**: Enables FXGL use in larger applications
+
+#### Multiplayer Enhancements
+- **Ping Information** (Recent Enhancement)
+  - **Description**: MultiplayerService provides ping (round-trip time) information
+  - **Source**: Recent release notes
+  - **Impact**: Better network performance monitoring
+  - **Complexity**: Simple - network timing measurement
+  - **Rationale**: Essential for multiplayer game quality
+
+#### Scene System Improvements
+- **Dialogue Scene Scrolling** (Recent Enhancement)
+  - **Description**: DialogueScene no longer limited to 5 choices, uses scroll bar
+  - **Source**: Recent release notes
+  - **Impact**: More flexible dialogue system
+  - **Complexity**: Simple - UI component enhancement
+  - **Rationale**: Removes artificial limitations on dialogue options
+
+## Implementation Roadmap
+
+### Phase 1: Critical Bug Fixes (Immediate)
+1. Fix particle system object pool recycling
+2. Resolve program exit exception
+3. Fix IllegalAccessError with MassData
+4. Optimize tiled map editor performance
+
+### Phase 2: High-Impact Features (3-6 months)
+1. Implement physics component acceleration
+2. Add game window size constraints
+3. Enhance volume control system
+4. Improve menu responsiveness
+
+### Phase 3: Platform Expansion (6-12 months)
+1. Optimize for Raspberry Pi
+2. Ensure Steam Deck compatibility
+3. Integrate Steam SDK
+4. Improve embedded platform detection
+
+### Phase 4: Developer Experience (Ongoing)
+1. Expand unit test coverage
+2. Add module version information
+3. Improve documentation
+4. Enhanced development tools
+
+## Community Contribution Guidelines
+
+Based on the original repository's contribution patterns:
+
+### High-Value Contributions
+- **Bug Fixes**: Critical and high-priority issues
+- **Performance Optimizations**: Especially for pathfinding and rendering
+- **Platform Support**: Cross-platform compatibility improvements
+- **Testing**: Unit test coverage for core modules
+
+### Moderate-Value Contributions
+- **UI/UX Improvements**: Menu system and component enhancements
+- **API Enhancements**: Animation and physics system improvements
+- **Developer Tools**: Editor and debugging improvements
+
+### Documentation Needed
+- **Platform-Specific Guides**: Raspberry Pi, Steam Deck deployment
+- **Performance Optimization**: Best practices for FXGL games
+- **Cross-Platform Considerations**: Platform-specific behaviors
+
+## Notes on Java 17 Compatibility
+
+### Already Addressed
+- **Foreign Function & Memory API**: Properly disabled experimental features
+- **Reflection Access**: Module access issues resolved
+- **Collection API**: Modern alternatives to deprecated methods
+
+### Needs Attention
+- **Native Library Loading**: Ensure cross-platform compatibility
+- **Module System**: Proper module-info.java declarations
+- **Performance**: Verify no performance regressions from Java 17 changes
+
+## Conclusion
+
+The original FXGL repository has an active community with consistent feature requests and bug reports. The Java 17 compatible fork should prioritize:
+
+1. **Stability**: Fix critical bugs affecting core functionality
+2. **Performance**: Address performance bottlenecks, especially in pathfinding
+3. **Cross-Platform**: Improve support for emerging platforms
+4. **Developer Experience**: Enhance tools and documentation
+
+This roadmap provides a clear path for maintaining feature parity with the original repository while ensuring Java 17 compatibility and addressing community needs.

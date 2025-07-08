@@ -50,6 +50,8 @@ public final class PhysicsComponent extends Component {
 
     private PhysicsWorld physicsWorld;
 
+    private Vec2 constantAcceleration = null;
+
     void setWorld(PhysicsWorld world) {
         physicsWorld = world;
     }
@@ -309,6 +311,86 @@ public final class PhysicsComponent extends Component {
     }
 
     /**
+     * Apply acceleration to the velocity of the physics entity.
+     * This method applies a continuous acceleration rather than a force.
+     * The acceleration is in pixels per second squared.
+     *
+     * @param acceleration acceleration vector in pixels per second squared
+     */
+    public void applyAcceleration(Point2D acceleration) {
+        applyBodyAcceleration(getPhysicsWorld().toVector(acceleration));
+    }
+
+    /**
+     * Apply acceleration to the velocity of the physics entity.
+     * This method applies a continuous acceleration rather than a force.
+     * The acceleration is in pixels per second squared.
+     *
+     * @param x acceleration in X direction (pixels per second squared)
+     * @param y acceleration in Y direction (pixels per second squared)
+     */
+    public void applyAcceleration(double x, double y) {
+        applyAcceleration(new Point2D(x, y));
+    }
+
+    /**
+     * Apply acceleration to the velocity of the physics entity.
+     * This method applies a continuous acceleration rather than a force.
+     * The acceleration is in meters per second squared.
+     *
+     * @param acceleration acceleration vector in meters per second squared
+     */
+    public void applyBodyAcceleration(Vec2 acceleration) {
+        // Apply acceleration directly to velocity (F = ma, so a = F/m)
+        // Since we want acceleration regardless of mass, we multiply by mass to get force
+        float mass = getBody().getMass();
+        Vec2 force = new Vec2(acceleration.x * mass, acceleration.y * mass);
+        getBody().applyForceToCenter(force);
+    }
+
+    /**
+     * Set a constant acceleration that will be applied every frame.
+     * This provides continuous acceleration similar to gravity.
+     * The acceleration is in pixels per second squared.
+     *
+     * @param acceleration constant acceleration vector in pixels per second squared
+     */
+    public void setConstantAcceleration(Point2D acceleration) {
+        constantAcceleration = getPhysicsWorld().toVector(acceleration);
+    }
+
+    /**
+     * Set a constant acceleration that will be applied every frame.
+     * This provides continuous acceleration similar to gravity.
+     * The acceleration is in pixels per second squared.
+     *
+     * @param x constant acceleration in X direction (pixels per second squared)
+     * @param y constant acceleration in Y direction (pixels per second squared)
+     */
+    public void setConstantAcceleration(double x, double y) {
+        setConstantAcceleration(new Point2D(x, y));
+    }
+
+    /**
+     * Get the current constant acceleration.
+     *
+     * @return constant acceleration vector in pixels per second squared
+     */
+    public Point2D getConstantAcceleration() {
+        if (constantAcceleration == null) {
+            return Point2D.ZERO;
+        }
+        return getPhysicsWorld().toVector(constantAcceleration);
+    }
+
+    /**
+     * Clear any constant acceleration that was set.
+     */
+    public void clearConstantAcceleration() {
+        constantAcceleration = null;
+    }
+
+    /**
      * Set true to make raycast ignore this entity.
      *
      * @param b raycast flag
@@ -331,6 +413,11 @@ public final class PhysicsComponent extends Component {
     public void onUpdate(double tpf) {
         if (body == null)
             return;
+
+        // Apply constant acceleration if set
+        if (constantAcceleration != null) {
+            applyBodyAcceleration(constantAcceleration);
+        }
 
         // these give us min world coordinates of the overall bbox
         // but they are not coordinates of the entity

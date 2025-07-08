@@ -141,6 +141,34 @@ class GameSettings(
         var isPreserveResizeRatio: Boolean = false,
 
         /**
+         * Set minimum width for the game window when manual resize is enabled.
+         * Only applies when [isManualResizeEnabled] is true.
+         * Default value of -1 means no minimum constraint.
+         */
+        var minWidth: Int = -1,
+
+        /**
+         * Set minimum height for the game window when manual resize is enabled.
+         * Only applies when [isManualResizeEnabled] is true.
+         * Default value of -1 means no minimum constraint.
+         */
+        var minHeight: Int = -1,
+
+        /**
+         * Set maximum width for the game window when manual resize is enabled.
+         * Only applies when [isManualResizeEnabled] is true.
+         * Default value of -1 means no maximum constraint.
+         */
+        var maxWidth: Int = -1,
+
+        /**
+         * Set maximum height for the game window when manual resize is enabled.
+         * Only applies when [isManualResizeEnabled] is true.
+         * Default value of -1 means no maximum constraint.
+         */
+        var maxHeight: Int = -1,
+
+        /**
          * If true, during resize the game will auto-scale to maintain consistency across all displays.
          * If false, during resize, only the window will change size, which allows different displays
          * to have different views.
@@ -361,6 +389,44 @@ class GameSettings(
         width = (height * ratio).roundToInt()
     }
 
+    /**
+     * Set minimum window size constraints for manual resize.
+     * Only applies when [isManualResizeEnabled] is true.
+     *
+     * @param minWidth minimum width in pixels, -1 for no constraint
+     * @param minHeight minimum height in pixels, -1 for no constraint
+     */
+    fun setMinSize(minWidth: Int, minHeight: Int) {
+        this.minWidth = minWidth
+        this.minHeight = minHeight
+    }
+
+    /**
+     * Set maximum window size constraints for manual resize.
+     * Only applies when [isManualResizeEnabled] is true.
+     *
+     * @param maxWidth maximum width in pixels, -1 for no constraint
+     * @param maxHeight maximum height in pixels, -1 for no constraint
+     */
+    fun setMaxSize(maxWidth: Int, maxHeight: Int) {
+        this.maxWidth = maxWidth
+        this.maxHeight = maxHeight
+    }
+
+    /**
+     * Set both minimum and maximum window size constraints for manual resize.
+     * Only applies when [isManualResizeEnabled] is true.
+     *
+     * @param minWidth minimum width in pixels, -1 for no constraint
+     * @param minHeight minimum height in pixels, -1 for no constraint
+     * @param maxWidth maximum width in pixels, -1 for no constraint
+     * @param maxHeight maximum height in pixels, -1 for no constraint
+     */
+    fun setSizeConstraints(minWidth: Int, minHeight: Int, maxWidth: Int, maxHeight: Int) {
+        setMinSize(minWidth, minHeight)
+        setMaxSize(maxWidth, maxHeight)
+    }
+
     fun toReadOnly(userAppClass: Class<*> = GameApplication::class.java): ReadOnlyGameSettings {
         if (title == "")
             title = "Untitled"
@@ -375,6 +441,10 @@ class GameSettings(
                 isFullScreenFromStart,
                 isManualResizeEnabled,
                 isPreserveResizeRatio,
+                minWidth,
+                minHeight,
+                maxWidth,
+                maxHeight,
                 isScaleAffectedOnResize,
                 isIntroEnabled,
                 isMainMenuEnabled,
@@ -477,6 +547,34 @@ class ReadOnlyGameSettings internal constructor(
         val isManualResizeEnabled: Boolean,
 
         val isPreserveResizeRatio: Boolean,
+
+        /**
+         * Set minimum width for the game window when manual resize is enabled.
+         * Only applies when [isManualResizeEnabled] is true.
+         * Default value of -1 means no minimum constraint.
+         */
+        val minWidth: Int,
+
+        /**
+         * Set minimum height for the game window when manual resize is enabled.
+         * Only applies when [isManualResizeEnabled] is true.
+         * Default value of -1 means no minimum constraint.
+         */
+        val minHeight: Int,
+
+        /**
+         * Set maximum width for the game window when manual resize is enabled.
+         * Only applies when [isManualResizeEnabled] is true.
+         * Default value of -1 means no maximum constraint.
+         */
+        val maxWidth: Int,
+
+        /**
+         * Set maximum height for the game window when manual resize is enabled.
+         * Only applies when [isManualResizeEnabled] is true.
+         * Default value of -1 means no maximum constraint.
+         */
+        val maxHeight: Int,
 
         /**
          * If true, during resize the game will auto-scale to maintain consistency across all displays.

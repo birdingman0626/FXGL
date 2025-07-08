@@ -1,0 +1,137 @@
+name: Sync Upstream
+
+on:
+  # Run automatically every day at 6 AM UTC
+  schedule:
+    - cron: '0 6 * * *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      force_push:
+        description: 'Force push if needed (use with caution)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for all branches
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Configure Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+    
+    - name: Add original FXGL repository as remote
+      run: |
+        # Remove if already exists (in case of re-runs)
+        git remote remove original 2>/dev/null || true
+        git remote add original https://github.com/AlmasB/FXGL.git
+        
+    - name: Fetch from original repository
+      run: |
+        echo "🔄 Fetching latest changes from original FXGL repository..."
+        git fetch original
+        
+    - name: Sync upstream branch
+      run: |
+        echo "📋 Current branches:"
+        git branch -a
+        
+        # Check if upstream branch exists locally
+        if git branch | grep -q "upstream"; then
+          echo "✅ Local upstream branch exists, switching to it..."
+          git checkout upstream
+        else
+          echo "🆕 Creating local upstream branch from original/dev..."
+          git checkout -b upstream original/dev
+        fi
+        
+        # Get current commit hashes for comparison
+        ORIGINAL_COMMIT=$(git rev-parse original/dev)
+        CURRENT_COMMIT=$(git rev-parse HEAD)
+        
+        echo "📊 Commit comparison:"
+        echo "  Original/dev: $ORIGINAL_COMMIT"
+        echo "  Current upstream: $CURRENT_COMMIT"
+        
+        if [ "$ORIGINAL_COMMIT" = "$CURRENT_COMMIT" ]; then
+          echo "✅ Upstream branch is already up to date"
+          echo "sync_needed=false" >> $GITHUB_OUTPUT
+        else
+          echo "🔄 Updates found, syncing..."
+          
+          # Check for local commits
+          LOCAL_COMMITS=$(git rev-list --count original/dev..HEAD 2>/dev/null || echo "0")
+          
+          if [ "$LOCAL_COMMITS" -gt 0 ]; then
+            echo "⚠️  Found $LOCAL_COMMITS local commits, merging..."
+            git merge original/dev --no-edit
+          else
+            echo "⚡ Fast-forwarding to original/dev..."
+            git reset --hard original/dev
+          fi
+          
+          echo "sync_needed=true" >> $GITHUB_OUTPUT
+        fi
+      id: sync
+        
+    - name: Push updated upstream branch
+      if: steps.sync.outputs.sync_needed == 'true'
+      run: |
+        echo "📤 Pushing updated upstream branch..."
+        
+        if [ "${{ github.event.inputs.force_push }}" = "true" ]; then
+          echo "⚠️  Force pushing (manual override)..."
+          git push --force-with-lease origin upstream
+        else
+          if git push origin upstream; then
+            echo "✅ Successfully pushed upstream branch"
+          else
+            echo "❌ Push failed - may need force push"
+            echo "💡 To force push manually, re-run workflow with force_push=true"
+            exit 1
+          fi
+        fi
+        
+    - name: Create sync summary
+      if: steps.sync.outputs.sync_needed == 'true'
+      run: |
+        echo "📊 Sync Summary" >> $GITHUB_STEP_SUMMARY
+        echo "===============" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Successfully synced upstream branch with original FXGL repository" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Recent commits on upstream:**" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        git log --oneline -5 upstream >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch Status:**" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔄 upstream: Synced with original FXGL (Java 23)" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔧 java17-compatible: Java 17 development branch" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Review changes in the upstream branch" >> $GITHUB_STEP_SUMMARY
+        echo "- Consider cherry-picking relevant commits to java17-compatible" >> $GITHUB_STEP_SUMMARY
+        echo "- Test compatibility before merging" >> $GITHUB_STEP_SUMMARY
+        
+    - name: No sync needed
+      if: steps.sync.outputs.sync_needed == 'false'
+      run: |
+        echo "✅ No Sync Needed" >> $GITHUB_STEP_SUMMARY
+        echo "=================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "The upstream branch is already up to date with the original FXGL repository." >> $GITHUB_STEP_SUMMARY

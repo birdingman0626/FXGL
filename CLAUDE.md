@@ -50,6 +50,10 @@ mvn clean install -pl fxgl -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=t
 mvn test -Dtest=ArrayCompilationWarningsTest -pl fxgl-core
 mvn test -Dtest=AStarPathfinderJava17Test -pl fxgl-entity
 mvn test -Dtest=EntityMethodCallTest -pl fxgl-entity
+
+# Upstream sync commands
+bash scripts/sync-upstream.sh              # Manual sync with original FXGL repo
+bash scripts/setup-auto-sync.sh            # Setup automatic daily sync
 ```
 
 ### Development Setup
@@ -73,6 +77,46 @@ The project is organized into focused modules:
 - **fxgl-scene**: UI components, notifications, dialogs, scene management
 - **fxgl-gameplay**: High-level game features (achievements, quests, cutscenes)
 - **fxgl**: Main aggregator module providing the GameApplication framework
+
+### Upstream Synchronization
+
+This repository includes automated tools to stay synchronized with the original FXGL repository:
+
+#### Automated Sync Options
+
+1. **GitHub Actions** (Recommended)
+   - Automatically runs daily at 6 AM UTC
+   - Workflow file: `.github/workflows/sync-upstream.yml`
+   - Manual trigger available in GitHub Actions UI
+   - Provides detailed sync summaries
+
+2. **Local Automation**
+   - macOS: Uses launchd for scheduling
+   - Linux: Uses cron for scheduling
+   - Setup: `bash scripts/setup-auto-sync.sh`
+   - Logs stored in `logs/` directory
+
+#### Manual Sync Commands
+
+```bash
+# Sync upstream branch with original FXGL repository
+bash scripts/sync-upstream.sh
+
+# Setup automatic daily sync (local)
+bash scripts/setup-auto-sync.sh
+
+# Git commands for manual operations
+git fetch original                    # Fetch latest from original repo
+git checkout upstream                 # Switch to upstream branch
+git merge original/dev               # Merge original changes
+git cherry-pick <commit-hash>        # Cherry-pick specific commits
+```
+
+#### Branch Strategy
+
+- **upstream**: Always synced with original FXGL (Java 23)
+- **java17-compatible**: Java 17 development branch (manually managed)
+- **Workflow**: Review upstream changes → Cherry-pick or merge relevant commits to java17-compatible
 
 ### Key Architectural Patterns
 

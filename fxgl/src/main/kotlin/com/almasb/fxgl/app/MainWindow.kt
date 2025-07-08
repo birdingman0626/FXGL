@@ -389,6 +389,24 @@ internal class PrimaryStageWindow(
 
             isResizable = settings.isManualResizeEnabled
 
+            // Apply window size constraints if manual resize is enabled
+            if (settings.isManualResizeEnabled) {
+                if (settings.minWidth > 0) {
+                    minWidth = settings.minWidth.toDouble()
+                }
+                if (settings.minHeight > 0) {
+                    minHeight = settings.minHeight.toDouble()
+                }
+                if (settings.maxWidth > 0) {
+                    maxWidth = settings.maxWidth.toDouble()
+                }
+                if (settings.maxHeight > 0) {
+                    maxHeight = settings.maxHeight.toDouble()
+                }
+                
+                log.debug("Applied window size constraints: min(${minWidth}, ${minHeight}), max(${maxWidth}, ${maxHeight})")
+            }
+
             if (settings.isDesktop) {
                 initStyle(settings.stageStyle)
             }

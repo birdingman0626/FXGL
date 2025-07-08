@@ -62,6 +62,35 @@ class Music(val audio: Audio) : Disposable {
 
     internal var isDisposed = false
 
+    /**
+     * Set individual volume for this music instance.
+     * This is in addition to the global music volume.
+     * The final volume will be: globalMusicVolume * individualVolume
+     *
+     * @param volume volume level between 0.0 and 1.0
+     */
+    fun setVolume(volume: Double) {
+        audio.setVolume(volume)
+    }
+
+    /**
+     * Set this music to loop continuously.
+     *
+     * @param looping true to enable looping, false to disable
+     */
+    fun setLooping(looping: Boolean) {
+        audio.setLooping(looping)
+    }
+
+    /**
+     * Set an action to be executed when this music finishes playing.
+     *
+     * @param action the action to execute
+     */
+    fun setOnFinished(action: Runnable) {
+        audio.setOnFinished(action)
+    }
+
     override fun dispose() {
         isDisposed = true
     }
@@ -75,6 +104,35 @@ class Music(val audio: Audio) : Disposable {
 class Sound(val audio: Audio) : Disposable {
 
     internal var isDisposed = false
+
+    /**
+     * Set individual volume for this sound instance.
+     * This is in addition to the global sound volume.
+     * The final volume will be: globalSoundVolume * individualVolume
+     *
+     * @param volume volume level between 0.0 and 1.0
+     */
+    fun setVolume(volume: Double) {
+        audio.setVolume(volume)
+    }
+
+    /**
+     * Set this sound to loop continuously.
+     *
+     * @param looping true to enable looping, false to disable
+     */
+    fun setLooping(looping: Boolean) {
+        audio.setLooping(looping)
+    }
+
+    /**
+     * Set an action to be executed when this sound finishes playing.
+     *
+     * @param action the action to execute
+     */
+    fun setOnFinished(action: Runnable) {
+        audio.setOnFinished(action)
+    }
 
     override fun dispose() {
         isDisposed = true
