@@ -26,34 +26,20 @@ This repository serves as a Java 17 migration fork of the original FXGL framewor
 This project uses **Maven** as the build system. The upstream branch uses Java 23 and Kotlin 2.0.0, while the java17-compatible branch targets Java 17 LTS.
 
 ### Essential Commands
-
 ```bash
-# Build the entire project
-mvn clean compile
+# Install all modules modularly to local Maven repository
+mvn clean install -pl fxgl-core -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-io -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-entity -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-scene -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-gameplay -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-controllerinput -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-intelligence -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-tools -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
 
-# Run all tests
-mvn test
-
-# Run tests for a specific module
-mvn test -pl fxgl-core
-
-# Check code quality (PMD)
-mvn pmd:check
-
-# Check license headers
-mvn license:check
-
-# Create packages
-mvn package
-
-# Install to local repository
-mvn install
-
-# Run a specific test class
-mvn test -Dtest=EntityTest
-
-# Run a specific test method
-mvn test -Dtest=EntityTest#testEntityCreation
+# Alternative: Install all modules at once (may cause aggregation issues with some tools)
+mvn clean install -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
 ```
 
 ### Development Setup

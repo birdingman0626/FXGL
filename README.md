@@ -1,192 +1,170 @@
-![promo](https://raw.githubusercontent.com/AlmasB/git-server/master/storage/images/fxgl_promo.jpg)
+# FXGL - JDK 17 Compatible Fork
 
-## Languages
+### Why doing this?
+I am using the GluonFX plugin to compile my FXGL projects for mobile platforms, but it is only stable with JDK 17. Since I am not utilizing advanced features from newer JDK versions but still need bug fixes from recent updates, I have decided to maintain a Java 17-only version of FXGL. Thanks to AI, this task has been largely automated. All credit goes to the original FXGL project and its maintainers.
 
-&emsp;&emsp;English
+This is a JDK 17 compatible fork of the [FXGL JavaFX Game Development Framework](https://github.com/AlmasB/FXGL). 
 
-&emsp;&emsp;[简体中文](https://github.com/AlmasB/FXGL/blob/dev/README_CN.md)
+## Original Repository
 
-&emsp;&emsp;[Русский](https://github.com/AlmasB/FXGL/blob/dev/README_RU.md)
+**For the latest features, documentation, and community support, please visit the original repository:**
+- **Original FXGL**: https://github.com/AlmasB/FXGL
+- **Original Documentation**: https://github.com/AlmasB/FXGL/wiki
+- **Original Samples**: https://github.com/AlmasB/FXGL/tree/dev/fxgl-samples
 
-## About
+## Fork-Specific Changes
 
-<img src="https://raw.githubusercontent.com/AlmasB/git-server/master/storage/images/fxgl_logo.png" width="128" />
+### JDK 17 Compatibility
+- **Target JDK Version**: JDK 17 (downgraded from JDK 8-23 range)
+- **Build System**: Maven configured for JDK 17 compilation
+- **Language Features**: Limited to JDK 17 compatible features only
+- **Dependencies**: All dependencies verified for JDK 17 compatibility
 
-JavaFX Game Development Framework
+### Recent Updates (Latest Release)
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.almasb/fxgl.svg)]()
-[![Build Status](https://github.com/AlmasB/FXGL/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/AlmasB/FXGL/actions)
-[![codecov](https://codecov.io/gh/AlmasB/FXGL/branch/dev/graph/badge.svg)](https://codecov.io/gh/AlmasB/FXGL)
-[![sponsor](https://img.shields.io/badge/sponsor-%241-brightgreen)](https://github.com/sponsors/AlmasB)
-[![JFXCentral](https://img.shields.io/badge/Find_me_on-JFXCentral-blue?logo=googlechrome&logoColor=white)](https://www.jfx-central.com/libraries/fxgl)
+#### **Dependency Updates (December 2024)**
+- **Updated to latest Java 17 compatible versions**:
+  - **JavaFX**: 21.0.1 → 21.0.5 (latest stable)
+  - **Kotlin**: 2.0.0 → 2.1.0 (latest stable)
+  - **Attach**: 4.0.17 → 4.0.20 (latest stable)
+  - **WebSocket**: 1.5.5 → 1.5.7 (latest stable)
+  - **Selenium**: 4.18.1 → 4.27.0 (latest stable)
+  - **SLF4J**: 2.0.6 → 2.0.16 (latest stable)
+  - **JUnit Jupiter**: 5.10.0 → 5.11.4 (latest stable)
+  - **JUnit Platform**: 1.10.0 → 1.11.4 (latest stable)
+  - **Hamcrest**: 1.3 → 2.2 (latest stable)
+  - **Maven Surefire**: 3.0.0 → 3.5.2 (latest stable)
+  - **Maven Shade**: 3.2.2 → 3.6.0 (latest stable)
+  - **Maven Source**: 3.2.0 → 3.3.1 (latest stable)
+  - **Maven JAR**: 3.2.0 → 3.4.2 (latest stable)
 
-### Why FXGL?
+#### **Previous Bug Fixes**
+- **Fixed ArrayIndexOutOfBoundsException in platformer controls** (#1414)
+  - Added proper bounds checking in RobotPlatformerSample to prevent crashes when spamming controls
+- **Fixed particle system recycling bug** (#1417)
+  - Corrected object pool recycling to properly return Particle objects instead of Point2D positions
+- **Fixed pooled entities data parsing** (#1349)
+  - Ensured SpawnData properties are properly applied to reused entities from the pool
+- **Fixed thread safety in object pooling** (#936)
+  - Replaced HashMap with ConcurrentHashMap and implemented atomic operations for thread-safe pool access
+- **Fixed input concurrent modification issues**
+  - Prevented ConcurrentModificationException during rapid input processing
 
-* No installation or setup is required
-* "Out of the box": Java 8-21, Win/Mac/Linux/Android 8+/iOS 11.0+/Web
-* Simple and clean API, higher level than other engines
-* Superset of JavaFX: no need to learn new UI API
-* Real-world game development techniques: Entity-Component, interpolated animations, particles, and [many more](https://github.com/AlmasB/FXGL/wiki/Core-Features)
-* Games are easily packaged into a single executable .jar, or native images
+#### **Implementation Improvements**
+- **Implemented EmbeddedPaneWindow focus detection** (#1346)
+  - Proper focus state detection for embedded FXGL applications
 
-### Good for:
+### Modifications Made
+- Maven compiler plugin configured for JDK 17 target
+- Removed or replaced JDK 18+ specific language features
+- Updated build configuration for JDK 17 compatibility
+- Maintained API compatibility with original FXGL where possible
+- Enhanced thread safety and memory management
+- **All dependencies updated to latest Java 17 compatible versions**
+- **Build system optimized for Java 17 LTS**
 
-* Any 2D game (side-scroller / platformer / arcade / RPG)
-* Any business application with complex UI controls / animations
-* Experimental 3D
-* Hobby / academic / commercial projects
-* Teaching / learning / improving game development skills
-* Fast prototyping of app ideas
+## Building from Source
 
-### Minimal Example
+```bash
+# Install all modules modularly to local Maven repository
+mvn clean install -pl fxgl-core -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-io -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-entity -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-scene -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-gameplay -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-controllerinput -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-intelligence -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl-tools -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
+mvn clean install -pl fxgl -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
 
-```java
-public class BasicGameApp extends GameApplication {
+# Alternative: Install all modules at once (may cause aggregation issues with some tools)
+mvn clean install -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
 
-    @Override
-    protected void initSettings(GameSettings settings) {
-        settings.setWidth(800);
-        settings.setHeight(600);
-        settings.setTitle("Basic Game App");
-    }
+# Package for distribution
+mvn clean package -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-}
+# Run tests (optional, but recommended after dependency updates)
+mvn test -pl fxgl-core,fxgl-entity,fxgl-io,fxgl-scene
+
+# Clean build (if you encounter issues)
+mvn clean compile -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true
 ```
 
-## Getting Started
+### Build Notes
+- **Modular Installation**: Use individual module installation for better dependency resolution
+- **Skip Flags**: The build skips tests, GPG signing, license checks, and PMD analysis for faster builds
+- **Java 17 Target**: All compilation targets Java 17 bytecode specifically
+- **Updated Dependencies**: Latest stable versions ensure security patches and bug fixes
 
-For a quick dive into code, see standalone [basic examples](https://github.com/AlmasB/FXGL/tree/dev/fxgl-samples/src/main/java/basics).
+### Versioning
 
-Otherwise, see:
+The versioning for this fork follows a `17.x.y` scheme to reflect its specific nature:
+- **17**: Indicates that this fork is strictly compatible with JDK 17.
+- **x**: Corresponds to the feature set or version of the original FXGL project that this release is based on.
+- **y**: Represents patch releases for this fork, including bug fixes or minor improvements specific to the JDK 17 version.
 
-* [FXGL book](https://link.springer.com/book/10.1007/978-1-4842-8625-8?sap-outbound-id=3352BB472E8E602B4B29844F1A86CCC4374DDF6E)
-* [Showcase Trailer](https://youtu.be/fuDQg7W0v4g)
-* [Use FXGL with IntelliJ](https://youtu.be/LhmlFC6KE2Q)
-* [Wiki & written tutorials](https://github.com/AlmasB/FXGL/wiki)
-* [YouTube tutorials](https://www.youtube.com/playlist?list=PL4h6ypqTi3RTiTuAQFKE6xwflnPKyFuPp)
-* [Sample code demos](fxgl-samples)
-* [FXGL games](https://github.com/AlmasB/FXGLGames) (with source)
-* [Published demos](https://fxgl.itch.io/) on itch.io
+The initial version for this fork is `17.3.1` since the official FXGL 17 stops at 17.3
 
-### Maven
+### Prerequisites
+- **JDK 17** (LTS version required)
+- **Maven 3.8+** (recommend 3.9+ for best compatibility)
+- **JavaFX Runtime** (automatically managed by Maven dependencies)
+- **IntelliJ IDEA 2023.2+** (recommended for Kotlin support)
 
-* [Maven](https://github.com/AlmasB/FXGL-MavenGradle) template project if you use Java and/or Kotlin
+## JDK 17 Limitations
 
-```xml
-<dependency>
-    <groupId>com.github.almasb</groupId>
-    <artifactId>fxgl</artifactId>
-    <version>21.1</version>
-</dependency>
-```
+### Features Not Available
+The following features from newer JDK versions are not available in this fork:
 
-### Gradle
+- **Pattern Matching for Switch** (JDK 17 has limited support, JDK 18+ features excluded)
+- **Record Patterns** (JDK 19+)
+- **Virtual Threads** (JDK 19+)
+- **Structured Concurrency** (JDK 19+)
+- **String Templates** (JDK 21+)
 
-* [Gradle](https://github.com/AlmasB/FXGL-MavenGradle) template project if you use Java and/or Kotlin
+### Workarounds
+- Traditional switch statements are used instead of pattern matching
+- Standard threading model instead of virtual threads
+- Manual resource management instead of structured concurrency
 
-Please refer to the template if there are any errors.
+## Merge Strategy
 
-```gradle
-repositories {
-    jcenter()
-}
+This fork selectively merges features from the upstream repository that maintain JDK 17 compatibility. For detailed merge guidance, see [CLAUDE.md](CLAUDE.md).
 
-dependencies {
-    compile 'com.github.almasb:fxgl:21.1'
-}
-```
+## Support and Documentation
 
-### Modularity
+### For General FXGL Support
+- **Original Wiki**: https://github.com/AlmasB/FXGL/wiki
+- **Original Discussions**: https://github.com/AlmasB/FXGL/discussions
+- **Original Tutorials**: https://www.youtube.com/playlist?list=PL4h6ypqTi3RTiTuAQFKE6xwflnPKyFuPp
 
-If you wish to develop a modular application, here's a complete example of your `module-info.java`:
+### For JDK 17 Specific Issues
+- Create issues in this repository for JDK 17 compatibility problems
+- Reference the original repository for general FXGL questions
 
-```java
-open module app.name {
-    requires com.almasb.fxgl.all;
-}
-```
+## License
 
-### Uber jar
+This fork maintains the same license as the original FXGL project. See the original repository for license details.
 
-Download the latest uber jar from [Releases](https://github.com/AlmasB/FXGL/releases)
+## Acknowledgments
 
-## Community
+- **Original FXGL**: Created and maintained by [Almas Baimagambetov](https://github.com/AlmasB)
+- **Original Contributors**: See [CONTRIBUTING.md](https://github.com/AlmasB/FXGL/blob/dev/CONTRIBUTING.md) in the original repository
+- **Community**: Thanks to the FXGL community for the excellent framework
 
-* University of Brighton, UK
-* University of Nottingham, UK
-* Georgia Institute of Technology, USA
-* kidOYO, USA
-* Walton High School, USA
-* Conant High School, USA
-* Zealand Institute of Business and Technology, Denmark
-* Federal Institute of Education, Science and Technology of Rio Grande do Sul, Brazil
-* FHNW School of Engineering / Computer Science, Switzerland
-* Johann-Andreas-Schmeller-Gymnasium Nabburg, Germany
+## Current Status
 
-If your institution wants to use or is using FXGL, add a note via [GitHub Discussions](https://github.com/AlmasB/FXGL/discussions) to be added to the list.
+This fork is actively maintained and up-to-date with:
+- **Latest Java 17 compatible dependencies** (updated December 2024)
+- **Full Java 17 LTS compatibility** across all modules
+- **Enhanced build system** with improved Maven configuration
+- **Comprehensive testing** with updated testing frameworks
 
-Community tutorials:
+## Staying Updated
 
-- [Space Ranger](https://www.journaldev.com/40219/space-rangers-game-java-fxgl) at journaldev
-- [Geometry Wars](https://webtechie.be/post/2020-05-07-getting-started-with-fxgl/) at webtechie
-- [Mazela-Man](https://dykstrom.github.io/mazela-man-web/home/) by dykstrom
-
-Community projects (identified using `fxgl` topic): 
-
-- [SOFTKNK.IO](https://github.com/softknk/softknk.io)
-- [Consume](https://ergoscrit.itch.io/consume)
-- [FXGL Sliding Puzzle](https://github.com/beryx/fxgl-sliding-puzzle)
-
-If you'd like your project featured here, just add a note via [GitHub Discussions](https://github.com/AlmasB/FXGL/discussions).
-
-### Development Team
-
-A description of roles is given in the [Contribution Guide](CONTRIBUTING.md).
-
-Maintainers (Collaborators):
-
-* [Almas Baimagambetov](https://github.com/AlmasB)
-
-Coordinators:
-
-* [Chengen Zhao](https://github.com/chengenzhao)
-
-Testers:
-
-* [Carl Dea](https://github.com/carldea)
-* [Frank Delporte](https://github.com/FDelporte)
-
-### Contribution & Support
-
-If you want to build FXGL from the source code or want to contribute,
-please see the [Contribution Guide](CONTRIBUTING.md) (including non-code).
-FXGL is fully modular, so new contributors do not need to understand the entire codebase, only the module to which the contribution is made.
-Contributions will be reviewed in accordance with the [Code of Conduct](CODE_OF_CONDUCT.md).
-
-You can support the FXGL development or show interest by simply starring the repo or becoming a [sponsor](https://github.com/sponsors/AlmasB).
-
-### Sponsors
-
-Users:
-
-* @Marsl10
-* @SergeMerzliakov
-* @mbains
-* @sabit86
-* @hendrikebbers
-* @ImperaEtConquer
-* @thejeed
-* @chikega
-
-Companies:
-
-* @karakun
-
-### Contact
-
-* Ask questions via [GitHub Discussions](https://github.com/AlmasB/FXGL/discussions) 
-* Ask via [StackOverflow](https://stackoverflow.com/search?q=fxgl) with tags `javafx` and `fxgl`
-* Tweet with [#fxgl](https://twitter.com/search?src=typd&q=%23fxgl)
+To benefit from upstream improvements while maintaining JDK 17 compatibility:
+1. Monitor the original repository for updates
+2. Use the merge guidance in [CLAUDE.md](CLAUDE.md)
+3. Test compatibility with JDK 17 before merging changes
+4. Document any limitations in this README
+5. **Dependency Updates**: Regular updates to maintain security and compatibility
