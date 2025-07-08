@@ -54,7 +54,7 @@ public final class AStarPathfinder<T extends AStarCell> extends Pathfinder<T> {
 
     @Override
     public List<T> findPath(int sourceX, int sourceY, int targetX, int targetY, NeighborDirection neighborDirection, List<T> busyCells) {
-        return findPath(getGrid().getData(), getGrid().get(sourceX, sourceY), getGrid().get(targetX, targetY), neighborDirection, busyCells.toArray(new AStarCell[0]));
+        return findPath(getGrid().getData(), getGrid().get(sourceX, sourceY), getGrid().get(targetX, targetY), neighborDirection, busyCells.toArray(AStarCell[]::new));
     }
 
     /**

@@ -54,6 +54,7 @@ public class Array<T> implements Iterable<T> {
     /** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown. */
+    @SuppressWarnings("unchecked")
     Array(boolean ordered, int capacity) {
         this.ordered = ordered;
         items = (T[]) new Object[capacity];
@@ -63,6 +64,7 @@ public class Array<T> implements Iterable<T> {
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown. */
+    @SuppressWarnings("unchecked")
     Array(boolean ordered, int capacity, Class arrayType) {
         this.ordered = ordered;
         items = (T[]) newArray(arrayType, capacity);
@@ -141,6 +143,7 @@ public class Array<T> implements Iterable<T> {
         addAll(array, 0, array.size);
     }
 
+    @SuppressWarnings("unchecked")
     public void addAll(Array<? extends T> array, int start, int count) {
         if (start + count > array.size)
             throw new IllegalArgumentException("start + count must be <= size: " + start + " + " + count + " <= " + array.size);
@@ -508,6 +511,7 @@ public class Array<T> implements Iterable<T> {
      * @param newSize new array size
      * @return items
      */
+    @SuppressWarnings("unchecked")
     protected T[] resize(int newSize) {
         T[] items = this.items;
         T[] newItems = (T[]) newArray(items.getClass().getComponentType(), newSize);
@@ -573,10 +577,12 @@ public class Array<T> implements Iterable<T> {
      *
      * @return Java array with items
      */
+    @SuppressWarnings("unchecked")
     public T[] toArray() {
         return (T[]) toArray(items.getClass().getComponentType());
     }
 
+    @SuppressWarnings("unchecked")
     public <V> V[] toArray(Class type) {
         V[] result = (V[]) newArray(type, size);
         System.arraycopy(items, 0, result, 0, size);
@@ -639,7 +645,7 @@ public class Array<T> implements Iterable<T> {
         if (!(object instanceof Array))
             return false;
 
-        Array array = (Array) object;
+        Array<?> array = (Array<?>) object;
         if (!array.ordered)
             return false;
 

@@ -103,6 +103,7 @@ public class Entity implements Animatable, Copyable<Entity> {
             this.method = method;
         }
 
+        @SuppressWarnings("unchecked")
         <T> T call(Object... args) throws Exception {
             return (T) method.invoke(component, args);
         }
