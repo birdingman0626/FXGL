@@ -15,5 +15,10 @@ import com.almasb.fxgl.core.EngineService
  */
 class ProceduralGenerationService : EngineService() {
 
-    //fun dungeonBuilder(): DungeonBuilder = DungeonBuilder()
+    /**
+     * @param width dungeon width in tiles
+     * @param height dungeon height in tiles
+     * @return new DungeonBuilder instance
+     */
+    fun dungeonBuilder(width: Int, height: Int): DungeonBuilder = DungeonBuilder(width, height)
 }
