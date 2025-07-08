@@ -22,22 +22,6 @@ This is a JDK 17 compatible fork of the [FXGL JavaFX Game Development Framework]
 
 ### Recent Updates (Latest Release)
 
-#### **Dependency Updates (December 2024)**
-- **Updated to latest Java 17 compatible versions**:
-  - **JavaFX**: 21.0.1 → 21.0.5 (latest stable)
-  - **Kotlin**: 2.0.0 → 2.1.0 (latest stable)
-  - **Attach**: 4.0.17 → 4.0.20 (latest stable)
-  - **WebSocket**: 1.5.5 → 1.5.7 (latest stable)
-  - **Selenium**: 4.18.1 → 4.27.0 (latest stable)
-  - **SLF4J**: 2.0.6 → 2.0.16 (latest stable)
-  - **JUnit Jupiter**: 5.10.0 → 5.11.4 (latest stable)
-  - **JUnit Platform**: 1.10.0 → 1.11.4 (latest stable)
-  - **Hamcrest**: 1.3 → 2.2 (latest stable)
-  - **Maven Surefire**: 3.0.0 → 3.5.2 (latest stable)
-  - **Maven Shade**: 3.2.2 → 3.6.0 (latest stable)
-  - **Maven Source**: 3.2.0 → 3.3.1 (latest stable)
-  - **Maven JAR**: 3.2.0 → 3.4.2 (latest stable)
-
 #### **Previous Bug Fixes**
 - **Fixed ArrayIndexOutOfBoundsException in platformer controls** (#1414)
   - Added proper bounds checking in RobotPlatformerSample to prevent crashes when spamming controls
