@@ -15,7 +15,7 @@ import com.almasb.fxgl.entity.component.Component
  */
 class BehaviorTreeComponent(private val behaviorTree: BehaviorTree) : Component() {
     
-    private val context = BehaviorContext(entity)
+    private lateinit var context: BehaviorContext
     private var lastUpdateTime = 0.0
     
     /**
@@ -25,7 +25,15 @@ class BehaviorTreeComponent(private val behaviorTree: BehaviorTree) : Component(
      */
     var updateInterval = 0.1 // 10 times per second
     
+    override fun onAdded() {
+        context = BehaviorContext(entity)
+    }
+    
     override fun onUpdate(tpf: Double) {
+        if (!::context.isInitialized) {
+            return
+        }
+        
         lastUpdateTime += tpf
         
         if (lastUpdateTime >= updateInterval) {
@@ -43,41 +51,48 @@ class BehaviorTreeComponent(private val behaviorTree: BehaviorTree) : Component(
     /**
      * Get the behavior context for accessing the blackboard and entity.
      */
-    fun getContext(): BehaviorContext = context
+    fun getContext(): BehaviorContext {
+        if (!::context.isInitialized) {
+            context = BehaviorContext(entity)
+        }
+        return context
+    }
     
     /**
      * Reset the behavior tree to its initial state.
      */
     fun reset() {
         behaviorTree.reset()
-        context.blackboard.clear()
+        if (::context.isInitialized) {
+            context.blackboard.clear()
+        }
     }
     
     /**
      * Set a value in the blackboard that can be accessed by behavior tree nodes.
      */
     fun setBlackboardValue(key: String, value: Any) {
-        context.blackboard[key] = value
+        getContext().blackboard[key] = value
     }
     
     /**
      * Get a value from the blackboard.
      */
     fun getBlackboardValue(key: String): Any? {
-        return context.blackboard[key]
+        return getContext().blackboard[key]
     }
     
     /**
      * Remove a value from the blackboard.
      */
     fun removeBlackboardValue(key: String) {
-        context.blackboard.remove(key)
+        getContext().blackboard.remove(key)
     }
     
     /**
      * Check if a value exists in the blackboard.
      */
     fun hasBlackboardValue(key: String): Boolean {
-        return context.blackboard.containsKey(key)
+        return getContext().blackboard.containsKey(key)
     }
 }

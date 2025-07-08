@@ -5,9 +5,9 @@
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](#build-verification)
 [![API Compatibility](https://img.shields.io/badge/API-100%25%20Compatible-blue.svg)](#api-compatibility)
 
-## 🎉 Migration Complete!
+## 🎉 Migration Complete + Enhanced Features!
 
-This is a **fully migrated** Java 17 LTS compatible fork of the [FXGL JavaFX Game Development Framework](https://github.com/AlmasB/FXGL). The migration is **100% complete** and **production-ready**.
+This is a **fully migrated** Java 17 LTS compatible fork of the [FXGL JavaFX Game Development Framework](https://github.com/AlmasB/FXGL). The migration is **100% complete** with **additional enhancements** and **production-ready**.
 
 ### Why This Fork?
 I am using the GluonFX plugin to compile my FXGL projects for mobile platforms, but it is only stable with JDK 17. Since I am not utilizing advanced features from newer JDK versions but still need bug fixes from recent updates, I have decided to maintain a Java 17-only version of FXGL. Thanks to AI, this task has been largely automated. All credit goes to the original FXGL project and its maintainers. 
@@ -20,6 +20,51 @@ I am using the GluonFX plugin to compile my FXGL projects for mobile platforms, 
 - **Original Samples**: https://github.com/AlmasB/FXGL/tree/dev/fxgl-samples
 
 ## Fork-Specific Changes
+
+### ✅ Enhanced Features Implemented (2025-07-08)
+
+This fork includes several enhancements and bug fixes from the original FXGL repository:
+
+#### Performance Improvements
+- **Particle System Object Pool Fix** (#1417)
+  - Fixed memory leak in particle system position tracking
+  - Replaced Point2D with pooled Vec2 objects for better performance
+  - Proper cleanup of emitter positions when removed
+
+#### Physics System Enhancements
+- **Physics Component Acceleration Control** (#1411)
+  - Added `applyAcceleration()` methods for pixel-based acceleration
+  - Added `applyBodyAcceleration()` for Box2D meter-based acceleration
+  - Added `setConstantAcceleration()` for persistent acceleration effects
+  - Full integration with Box2D physics engine
+
+#### UI/UX Improvements
+- **Game Window Size Constraints** (#1410)
+  - Added `minWidth`, `minHeight`, `maxWidth`, `maxHeight` properties
+  - Helper methods: `setMinSize()`, `setMaxSize()`, `setSizeConstraints()`
+  - Full integration with JavaFX window management
+
+#### Audio System Enhancements
+- **Volume Control with Property Binding** (#1311)
+  - `globalMusicVolumeProperty` and `globalSoundVolumeProperty` for real-time control
+  - Bidirectional binding with UI sliders
+  - Layered volume system (global × individual)
+  - Automatic volume application to new audio instances
+
+#### AI System Enhancements
+- **Comprehensive Behavior Tree System**
+  - Full behavior tree implementation with all standard node types
+  - Composite nodes: Selector, Sequence, Parallel, RandomSelector
+  - Decorator nodes: Inverter, Succeeder, Failer, Repeater, Retry, Cooldown
+  - Pre-built actions and conditions for common AI behaviors
+  - Fluent DSL for easy behavior tree construction
+  - Full integration with FXGL's Entity-Component-System
+
+#### Testing & Quality Assurance
+- **Comprehensive Test Coverage**
+  - `ParticleSystemObjectPoolTest` - Verifies object pool recycling fix
+  - `ComprehensiveFeatureTest` - Integration tests for all new features
+  - Enhanced existing test suites with new functionality verification
 
 ### ✅ Java 17 LTS Compatibility - COMPLETE
 - **Target JDK Version**: Java 17 LTS (fully compatible)
@@ -48,9 +93,16 @@ The Java 17 migration is **100% complete** and **production-ready**:
 - **Enhanced type safety**: Improved generic type handling and casting throughout
 - **Testing verification**: 3 comprehensive test classes covering all migration aspects
 
+#### Latest Implementation Updates (2025-07-08)
+- ✅ **Fixed particle system object pool recycling bug** (#1417) - Vec2 pooling implementation
+- ✅ **Physics component acceleration control** (#1411) - Added acceleration methods to PhysicsComponent
+- ✅ **Game window size constraints** (#1410) - Min/max window size configuration
+- ✅ **Enhanced volume control with property binding** (#1311) - Real-time volume control
+- ✅ **Comprehensive behavior tree system** - Full AI behavior tree implementation
+- ✅ **Comprehensive test coverage** - New tests for all implemented features
+
 #### Previous Bug Fixes (Maintained)
 - **Fixed ArrayIndexOutOfBoundsException in platformer controls** (#1414)
-- **Fixed particle system recycling bug** (#1417)
 - **Fixed pooled entities data parsing** (#1349)
 - **Fixed thread safety in object pooling** (#936)
 - **Fixed input concurrent modification issues**
@@ -82,6 +134,10 @@ mvn clean package
 mvn test -Dtest=ArrayCompilationWarningsTest -pl fxgl-core
 mvn test -Dtest=AStarPathfinderJava17Test -pl fxgl-entity
 mvn test -Dtest=EntityMethodCallTest -pl fxgl-entity
+
+# Run comprehensive feature tests
+mvn test -Dtest=ParticleSystemObjectPoolTest -pl fxgl-entity
+mvn test -Dtest=ComprehensiveFeatureTest -pl fxgl-core
 
 # Install individual modules (if needed)
 mvn clean install -pl fxgl-core -am -DskipTests=true -Dgpg.skip=true -Dlicense.skip=true -Dpmd.skip=true

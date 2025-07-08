@@ -51,6 +51,10 @@ mvn test -Dtest=ArrayCompilationWarningsTest -pl fxgl-core
 mvn test -Dtest=AStarPathfinderJava17Test -pl fxgl-entity
 mvn test -Dtest=EntityMethodCallTest -pl fxgl-entity
 
+# Run comprehensive feature tests for new implementations
+mvn test -Dtest=ParticleSystemObjectPoolTest -pl fxgl-entity
+mvn test -Dtest=ComprehensiveFeatureTest -pl fxgl-core
+
 # Upstream sync commands
 bash scripts/sync-upstream.sh              # Manual sync with original FXGL repo
 bash scripts/setup-auto-sync.sh            # Setup automatic daily sync
@@ -309,5 +313,24 @@ The Java 17 migration for FXGL is **100% complete** and production-ready:
 - ✅ API compatibility: Existing code works unchanged
 - ✅ Test coverage: Comprehensive testing of migration changes
 - ✅ Documentation: Complete migration tracking in todo.md
+
+**Status**: 🎉 **PRODUCTION READY** - Ready for use in Java 17 projects
+
+### Latest Enhancements (2025-07-08)
+
+#### Critical Bug Fixes and Feature Implementations
+- ✅ **Particle System Object Pool Fix (#1417)**: Fixed memory leak by replacing Point2D with pooled Vec2 objects
+- ✅ **Physics Component Acceleration Control (#1411)**: Added comprehensive acceleration methods to PhysicsComponent
+- ✅ **Game Window Size Constraints (#1410)**: Implemented min/max window size configuration
+- ✅ **Volume Control with Property Binding (#1311)**: Added real-time volume control with property binding
+- ✅ **Comprehensive Behavior Tree System**: Full AI behavior tree implementation with all node types
+- ✅ **Enhanced Test Coverage**: Added comprehensive tests for all new features
+
+#### Technical Implementation Details
+- **Object Pool Optimization**: ParticleSystem now uses Vec2 pooling for better memory management
+- **Physics System Enhancement**: Added acceleration methods supporting both pixel and meter-based units
+- **UI System Improvements**: Window constraints fully integrated with JavaFX window management
+- **Audio System Upgrade**: Real-time volume control with bidirectional property binding
+- **AI System Expansion**: Full behavior tree implementation with DSL and pre-built behaviors
 
 **Status**: 🎉 **PRODUCTION READY** - Ready for use in Java 17 projects

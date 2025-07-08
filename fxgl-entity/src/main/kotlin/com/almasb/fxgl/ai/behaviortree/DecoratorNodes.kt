@@ -106,7 +106,7 @@ class RetryNode(child: BehaviorNode, private val maxRetries: Int) : DecoratorNod
  * Cooldown decorator that prevents its child from being executed too frequently.
  */
 class CooldownNode(child: BehaviorNode, private val cooldownSeconds: Double) : DecoratorNode(child) {
-    private var lastExecutionTime = 0.0
+    private var lastExecutionTime = -1.0
     
     override fun execute(context: BehaviorContext): BehaviorStatus {
         val currentTime = context.blackboard["currentTime"] as? Double ?: 0.0
@@ -125,7 +125,7 @@ class CooldownNode(child: BehaviorNode, private val cooldownSeconds: Double) : D
     }
     
     override fun reset() {
-        lastExecutionTime = 0.0
+        lastExecutionTime = -1.0
         super.reset()
     }
 }

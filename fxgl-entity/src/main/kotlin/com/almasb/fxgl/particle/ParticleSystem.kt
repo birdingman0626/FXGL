@@ -7,8 +7,8 @@
 package com.almasb.fxgl.particle
 
 import com.almasb.fxgl.core.Updatable
+import com.almasb.fxgl.core.math.Vec2
 import com.almasb.fxgl.core.pool.Pools
-import javafx.geometry.Point2D
 import javafx.scene.layout.Pane
 
 /**
@@ -21,16 +21,18 @@ class ParticleSystem : Updatable {
 
     val pane = Pane()
 
-    private val emitters = hashMapOf<ParticleEmitter, Point2D>()
+    private val emitters = hashMapOf<ParticleEmitter, Vec2>()
     private val particles = hashMapOf<ParticleEmitter, MutableList<Particle>>()
 
     fun addParticleEmitter(emitter: ParticleEmitter, x: Double, y: Double) {
-        emitters[emitter] = Point2D(x, y)
+        val position = Pools.obtain(Vec2::class.java)
+        position.set(x.toFloat(), y.toFloat())
+        emitters[emitter] = position
         particles[emitter] = arrayListOf()
     }
 
     fun removeParticleEmitter(emitter: ParticleEmitter) {
-        emitters.remove(emitter)
+        emitters.remove(emitter)?.let { Pools.free(it) }
         particles.remove(emitter)?.let { it.forEach { Pools.free(it) } }
     }
 
@@ -38,7 +40,7 @@ class ParticleSystem : Updatable {
         emitters.forEach { (emitter, p) ->
             val particlesList = particles[emitter]!!
 
-            particlesList.addAll(emitter.emit(p.x, p.y))
+            particlesList.addAll(emitter.emit(p.x.toDouble(), p.y.toDouble()))
 
             val iter = particlesList.iterator()
             while (iter.hasNext()) {
